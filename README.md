@@ -118,6 +118,13 @@ Migration files are stored in `supabase/migrations/`. Current migrations include
 
 Running `npx supabase db reset` is a quick way to verify that all migrations run successfully from a clean database.
 
+### Run Automated Database Tests
+Database logic is tested via `pgTAP`. Tests are located in `supabase/tests/`.
+To run the test suite:
+```bash
+npx supabase test db
+```
+
 ---
 
 ## Troubleshooting
@@ -150,10 +157,11 @@ docker stop $(docker ps -q --filter "name=PROJECT-NAME")
 - [x] Default account type set to student
 - [x] Row Level Security enabled on profiles
 - [x] Profile automatically created when an Auth user is created
+- [x] Add admin authorization checks
+- [x] Allow authorized admins to grant admin access
+- [x] Allow authorized admins to remove admin access
+- [x] Prevent users from promoting themselves
+- [x] Added automated database test suite (`pgTAP`) for admin workflows
 
 ### Next Steps:
-- [ ] Add admin authorization checks
-- [ ] Allow authorized admins to grant admin access
-- [ ] Allow authorized admins to remove admin access
-- [ ] Prevent users from promoting themselves
 - [ ] Add frontend admin-management UI after the frontend platform is chosen
