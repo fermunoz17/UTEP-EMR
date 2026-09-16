@@ -1,7 +1,7 @@
 begin;
 
--- We have four tests
-select plan(4);
+-- We have seven tests
+select plan(7);
 
 -- --------------------------------------------------
 -- Test setup
@@ -131,6 +131,65 @@ select throws_ok(
     'P0001',
     'Cannot remove the last active admin',
     'Last active admin cannot be removed'
+);
+
+
+-- --------------------------------------------------
+-- TEST 5: Student can only read their own profile
+-- --------------------------------------------------
+
+select set_config(
+    'request.jwt.claim.sub',
+    '11111111-1111-1111-1111-111111111111',
+    true
+);
+
+select is(
+    (select count(*) from public.profiles),
+    1::bigint,
+    'Student can only read their own profile'
+);
+
+
+-- --------------------------------------------------
+-- TEST 6: Admin can read all profiles
+-- --------------------------------------------------
+
+select set_config(
+    'request.jwt.claim.sub',
+    '22222222-2222-2222-2222-222222222222',
+    true
+);
+
+select is(
+    (select count(*) from public.profiles),
+    3::bigint,
+    'Admin can read all profiles'
+);
+
+
+-- --------------------------------------------------
+-- TEST 7: Student cannot directly promote themselves
+-- --------------------------------------------------
+
+select set_config(
+    'request.jwt.claim.sub',
+    '11111111-1111-1111-1111-111111111111',
+    true
+);
+
+update public.profiles
+set account_type = 'admin'
+where user_id = '11111111-1111-1111-1111-111111111111';
+
+select is(
+    (
+        select account_type
+        from public.profiles
+        where user_id = '11111111-1111-1111-1111-111111111111'
+    ),
+    'student',
+    'Student cannot directly change their account type to admin'
 );
 
 
