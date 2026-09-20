@@ -1,6 +1,6 @@
 # UTEP-EMR
 
-Educational Electronic Medical Record (EMR) prototype built with **Supabase**, **FastAPI (Python)**, and **JavaScript**.
+Educational Electronic Medical Record (EMR) prototype built with **Supabase**, **FastAPI (Python)**, and **React**.
 
 ---
 
@@ -14,12 +14,16 @@ UTEP-EMR/
 │   │   └── __init__.py
 │   └── requirements.txt
 │
-├── frontend/           # JavaScript frontend (Vite)
+├── frontend/           # React frontend (Vite)
 │   ├── src/
-│   │   ├── App.js      # App root component
-│   │   ├── index.js    # Entrypoint
+│   │   ├── pages/      # React components for pages (e.g., Login, Dashboard)
+│   │   ├── services/   # Supabase auth and API services
+│   │   ├── App.jsx     # App root component
+│   │   ├── index.jsx   # Entrypoint
+│   │   ├── supabase.js # Supabase client initialization
 │   │   └── styles.css
 │   ├── index.html
+│   ├── vite.config.js  # Vite configuration
 │   └── package.json
 │
 ├── supabase/           # Supabase database configuration & migrations
@@ -62,7 +66,7 @@ uvicorn app.main:app --reload --port 8000
 ```
 Interactive API docs will be at `http://127.0.0.1:8000/docs`.
 
-### 3. Frontend (JavaScript)
+### 3. Frontend (React)
 ```bash
 cd frontend
 npm install
