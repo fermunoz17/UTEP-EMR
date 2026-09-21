@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import Header from "./components/Header.jsx";
+import Navbar from "./components/Navbar.jsx";
+import Patients from "./pages/Patients.jsx";
 
 import {
     getSession,
@@ -15,7 +18,8 @@ export default function App() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
+    const [page, setPage] = useState("dashboard");
+    
     useEffect(() => {
         async function initializeAuth() {
             try {
@@ -89,9 +93,41 @@ export default function App() {
         );
     }
 
-    if (!user) {
-        return <p>Loading account...</p>;
+    let pageContent;
+
+    switch (page) {
+        case "patients":
+            pageContent = <Patients />;
+            break;
+
+        case "dashboard":
+
+        default:
+            pageContent = (
+                <Dashboard
+                user={user}
+                onNavigate={setPage}
+                />
+            );
+            break;
     }
 
-    return <Dashboard user={user} />;
+    return (
+        <div className="emr-app">
+            <Header user={user} />
+
+            <Navbar
+            user={user}
+            currentPage={page}
+            onNavigate={setPage}
+            />
+
+            {pageContent}
+
+            <footer className="emr-footer">
+            <span>Educational EMR Prototype</span>
+            <span>For educational use only</span>
+            </footer>
+        </div>
+    );
 }
