@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase.js";
 import MedicationSelector from "../components/MedicationSelector.jsx";
 
-export default function PatientDetail() {
-    const { id } = useParams();
-    const navigate = useNavigate();
+export default function PatientDetail({ id, onNavigate }) {
     const [patient, setPatient] = useState(null);
     const [visits, setVisits] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,6 +44,7 @@ export default function PatientDetail() {
             first_name: data.first_name ?? "",
             last_name: data.last_name ?? "",
             age: data.age ?? "",
+            sex: data.sex ?? "",
             occupation: data.occupation ?? "",
             medications: data.medications ?? "",
             last_visit: data.last_visit ?? "",
@@ -73,6 +71,7 @@ export default function PatientDetail() {
                 first_name: form.first_name.trim(),
                 last_name: form.last_name.trim(),
                 age: parseInt(form.age, 10),
+                sex: form.sex || null,
                 occupation: form.occupation.trim() || null,
                 medications: medicationsText,
                 last_visit: form.last_visit || null,
@@ -101,7 +100,7 @@ export default function PatientDetail() {
             console.error("Failed to delete:", error);
             setError("Failed to delete patient.");
         } else {
-            navigate("/patients");
+            onNavigate("patientManager");
         }
     }
 
@@ -113,7 +112,7 @@ export default function PatientDetail() {
             <div className="scaffold-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <h1>{patient.first_name} {patient.last_name}</h1>
-                    <button onClick={() => navigate("/patients")}>← Back</button>
+                    <button onClick={() => onNavigate("patientManager")}>← Back</button>
                 </div>
 
                 <p style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "#888" }}>
@@ -139,6 +138,14 @@ export default function PatientDetail() {
                             <div style={fieldStyle}>
                                 <label>Age</label>
                                 <input name="age" type="number" min="0" max="150" value={form.age} onChange={handleChange} required />
+                            </div>
+                            <div style={fieldStyle}>
+                                <label>Sex</label>
+                                <select name="sex" value={form.sex} onChange={handleChange}>
+                                    <option value="">— Select —</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
                             </div>
                             <div style={fieldStyle}>
                                 <label>Occupation</label>
@@ -171,6 +178,7 @@ export default function PatientDetail() {
                         <div style={sectionStyle}>
                             <h3>Basic Info</h3>
                             <Detail label="Age" value={patient.age} />
+                            <Detail label="Sex" value={patient.sex} />
                             <Detail label="Occupation" value={patient.occupation} />
                         </div>
 

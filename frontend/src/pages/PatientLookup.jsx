@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase.js";
 
-export default function PatientLookup() {
-    const navigate = useNavigate();
+export default function PatientLookup({ onNavigate }) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [searched, setSearched] = useState(false);
@@ -43,7 +41,7 @@ export default function PatientLookup() {
             <div className="scaffold-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
                     <h1>Patient Lookup</h1>
-                    <button onClick={() => navigate("/dashboard")}>← Back</button>
+                    <button onClick={() => onNavigate("dashboard")}>← Back</button>
                 </div>
 
                 <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
@@ -76,7 +74,7 @@ export default function PatientLookup() {
                             {results.map((p) => (
                                 <tr
                                     key={p.id}
-                                    onClick={() => navigate(`/lookup/${p.id}`)}
+                                    onClick={() => onNavigate("studentPatientDetail", p.id)}
                                     style={{ cursor: "pointer" }}
                                     onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
                                     onMouseLeave={e => e.currentTarget.style.background = ""}

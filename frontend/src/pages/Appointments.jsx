@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase.js";
 import MedicationSelector from "../components/MedicationSelector.jsx";
 
@@ -11,8 +10,7 @@ const STATUS_COLORS = {
     cancelled:  { background: "#fdecea", color: "#c0392b" },
 };
 
-export default function Appointments() {
-    const navigate = useNavigate();
+export default function Appointments({ onNavigate }) {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("scheduled");
@@ -104,7 +102,7 @@ export default function Appointments() {
             <div className="scaffold-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
                     <h1>Appointments</h1>
-                    <button onClick={() => navigate("/dashboard")}>← Back</button>
+                    <button onClick={() => onNavigate("dashboard")}>← Back</button>
                 </div>
 
                 {/* Filter tabs */}
@@ -180,7 +178,7 @@ export default function Appointments() {
 
                                 <button
                                     style={{ ...smallBtnStyle, marginLeft: "auto" }}
-                                    onClick={() => navigate(`/lookup/${a.patient_id}`)}
+                                    onClick={() => onNavigate("studentPatientDetail", a.patient_id)}
                                 >
                                     View Patient →
                                 </button>

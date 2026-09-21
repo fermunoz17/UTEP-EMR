@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase.js";
 import MedicationSelector from "../components/MedicationSelector.jsx";
 
 const VISIT_TYPES = ["Initial", "Follow-up", "Emergency", "Routine", "Specialist", "Other"];
 const APPT_TYPES  = ["Follow-up", "Initial Consultation", "Specialist Referral", "Routine Check-up", "Emergency", "Other"];
 
-export default function StudentPatientDetail() {
-    const { id } = useParams();
-    const navigate = useNavigate();
+export default function StudentPatientDetail({ id, onNavigate }) {
     const [patient, setPatient] = useState(null);
     const [visits, setVisits] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -33,7 +30,7 @@ export default function StudentPatientDetail() {
     async function fetchData() {
         setLoading(true);
         const [patientRes, visitsRes] = await Promise.all([
-            supabase.from("patients").select("id, first_name, last_name, age, occupation").eq("id", id).single(),
+            supabase.from("patients").select("id, first_name, last_name, age, sex, occupation").eq("id", id).single(),
             supabase.from("visits").select("*").eq("patient_id", id).order("created_at", { ascending: false }),
         ]);
 
@@ -107,13 +104,14 @@ export default function StudentPatientDetail() {
             <div className="scaffold-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <h1>{patient.first_name} {patient.last_name}</h1>
-                    <button onClick={() => navigate("/lookup")}>← Back</button>
+                    <button onClick={() => onNavigate("patientLookup")}>← Back</button>
                 </div>
 
                 {/* Basic Info */}
                 <div style={sectionStyle}>
                     <h3>Patient Info</h3>
                     <Detail label="Age" value={patient.age} />
+                    <Detail label="Sex" value={patient.sex} />
                     <Detail label="Occupation" value={patient.occupation} />
                 </div>
 

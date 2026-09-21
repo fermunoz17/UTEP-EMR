@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase.js";
 
-export default function PatientManager() {
-    const navigate = useNavigate();
+export default function PatientManager({ onNavigate }) {
     const [patients, setPatients] = useState([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [formError, setFormError] = useState("");
     const [submitting, setSubmitting] = useState(false);
-    const [form, setForm] = useState({ first_name: "", last_name: "", age: "" });
+    const [form, setForm] = useState({ first_name: "", last_name: "", age: "", sex: "" });
 
     const filtered = patients.filter((p) => {
         const q = search.toLowerCase();
@@ -54,13 +52,14 @@ export default function PatientManager() {
             first_name: form.first_name.trim(),
             last_name: form.last_name.trim(),
             age: parseInt(form.age, 10),
+            sex: form.sex || null,
         });
 
         if (error) {
             console.error("Failed to add patient:", error);
             setFormError("Failed to add patient. Please try again.");
         } else {
-            setForm({ first_name: "", last_name: "", age: "" });
+            setForm({ first_name: "", last_name: "", age: "", sex: "" });
             setShowModal(false);
             await fetchPatients();
         }
@@ -70,7 +69,7 @@ export default function PatientManager() {
 
     function handleCloseModal() {
         setShowModal(false);
-        setForm({ first_name: "", last_name: "", age: "" });
+        setForm({ first_name: "", last_name: "", age: "", sex: "" });
         setFormError("");
     }
 
@@ -83,7 +82,7 @@ export default function PatientManager() {
                     <button onClick={() => setShowModal(true)}>
                         + Add Patient
                     </button>
-                    <button onClick={() => navigate("/dashboard")}>
+                    <button onClick={() => onNavigate("dashboard")}>
                         Back to Dashboard
                     </button>
                 </div>
@@ -115,7 +114,7 @@ export default function PatientManager() {
                             {filtered.map((p) => (
                                 <tr
                                     key={p.id}
-                                    onClick={() => navigate(`/patients/${p.id}`)}
+                                    onClick={() => onNavigate("patientDetail", p.id)}
                                     style={{ cursor: "pointer" }}
                                     onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
                                     onMouseLeave={e => e.currentTarget.style.background = ""}
@@ -176,6 +175,20 @@ export default function PatientManager() {
                                     onChange={handleChange}
                                     required
                                 />
+                            </div>
+
+                            <div style={fieldStyle}>
+                                <label htmlFor="sex">Sex</label>
+                                <select
+                                    id="sex"
+                                    name="sex"
+                                    value={form.sex}
+                                    onChange={handleChange}
+                                >
+                                    <option value="">— Select —</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
                             </div>
 
                             {formError && <p role="alert">{formError}</p>}
