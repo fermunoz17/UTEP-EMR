@@ -1,0 +1,142 @@
+[
+    {
+        "id": 1,
+        "name": "Lisinopril",
+        "min": 10,
+        "max": 40,
+        "unit": "mg"
+    },
+    {
+        "id": 2,
+        "name": "Atorvastatin",
+        "min": 10,
+        "max": 80,
+        "unit": "mg"
+    },
+    {
+        "id": 3,
+        "name": "Metformin",
+        "min": 500,
+        "max": 1000,
+        "unit": "mg"
+    },
+    {
+        "id": 4,
+        "name": "Amlodipine",
+        "min": 5,
+        "max": 10,
+        "unit": "mg"
+    },
+    {
+        "id": 5,
+        "name": "Metoprolol tartrate",
+        "min": 25,
+        "max": 100,
+        "unit": "mg"
+    },
+    {
+        "id": 6,
+        "name": "Omeprazole",
+        "min": 20,
+        "max": 40,
+        "unit": "mg"
+    },
+    {
+        "id": 7,
+        "name": "Levothyroxine",
+        "min": 50,
+        "max": 200,
+        "unit": "mcg"
+    },
+    {
+        "id": 8,
+        "name": "Sertraline",
+        "min": 50,
+        "max": 200,
+        "unit": "mg"
+    },
+    {
+        "id": 9,
+        "name": "Amoxicillin",
+        "min": 500,
+        "max": 875,
+        "unit": "mg"
+    },
+    {
+        "id": 10,
+        "name": "Albuterol",
+        "min": 1,
+        "max": 2,
+        "unit": "puffs"
+    },
+    {
+        "id": 11,
+        "name": "Ibuprofen",
+        "min": 400,
+        "max": 800,
+        "unit": "mg"
+    },
+    {
+        "id": 12,
+        "name": "Acetaminophen",
+        "min": 500,
+        "max": 1000,
+        "unit": "mg"
+    },
+    {
+        "id": 13,
+        "name": "Gabapentin",
+        "min": 300,
+        "max": 600,
+        "unit": "mg"
+    },
+    {
+        "id": 14,
+        "name": "Losartan",
+        "min": 50,
+        "max": 100,
+        "unit": "mg"
+    },
+    {
+        "id": 15,
+        "name": "Hydrochlorothiazide",
+        "min": 25,
+        "max": 50,
+        "unit": "mg"
+    },
+    {
+        "id": 16,
+        "name": "Clopidogrel",
+        "min": 75,
+        "max": 75,
+        "unit": "mg"
+    },
+    {
+        "id": 17,
+        "name": "Hydrocodone/Acetaminophen",
+        "min": 1,
+        "max": 2,
+        "unit": "tablets"
+    },
+    {
+        "id": 18,
+        "name": "Warfarin",
+        "min": 2,
+        "max": 10,
+        "unit": "mg"
+    },
+    {
+        "id": 19,
+        "name": "Azithromycin",
+        "min": 250,
+        "max": 500,
+        "unit": "mg"
+    },
+    {
+        "id": 20,
+        "name": "Prednisone",
+        "min": 5,
+        "max": 60,
+        "unit": "mg"
+    }
+]
