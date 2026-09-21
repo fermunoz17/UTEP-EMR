@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import PatientManager from "./pages/PatientManager.jsx";
+import PatientDetail from "./pages/PatientDetail.jsx";
+import PatientLookup from "./pages/PatientLookup.jsx";
+import StudentPatientDetail from "./pages/StudentPatientDetail.jsx";
+import Appointments from "./pages/Appointments.jsx";
 
 import {
     getSession,
@@ -93,5 +99,17 @@ export default function App() {
         return <p>Loading account...</p>;
     }
 
-    return <Dashboard user={user} />;
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/dashboard" element={<Dashboard user={user} />} />
+                <Route path="/patients" element={<PatientManager />} />
+                <Route path="/patients/:id" element={<PatientDetail />} />
+                <Route path="/lookup" element={<PatientLookup />} />
+                <Route path="/lookup/:id" element={<StudentPatientDetail />} />
+                <Route path="/appointments" element={<Appointments />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+        </BrowserRouter>
+    );
 }
