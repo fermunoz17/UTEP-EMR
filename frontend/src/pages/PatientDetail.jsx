@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase.js";
+import MedicationSelector from "../components/MedicationSelector.jsx";
 
 export default function PatientDetail() {
     const { id } = useParams();
@@ -12,6 +13,7 @@ export default function PatientDetail() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [form, setForm] = useState({});
+    const [editMeds, setEditMeds] = useState([]);
 
     useEffect(() => {
         fetchData();
@@ -61,6 +63,10 @@ export default function PatientDetail() {
         setSaving(true);
         setError("");
 
+        const medicationsText = editMeds.length > 0
+            ? editMeds.map((m) => `${m.medicine.name} ${m.dosage}${m.medicine.unit} ${m.frequency}x/day`).join(", ")
+            : null;
+
         const { error } = await supabase
             .from("patients")
             .update({
@@ -68,7 +74,7 @@ export default function PatientDetail() {
                 last_name: form.last_name.trim(),
                 age: parseInt(form.age, 10),
                 occupation: form.occupation.trim() || null,
-                medications: form.medications.trim() || null,
+                medications: medicationsText,
                 last_visit: form.last_visit || null,
                 last_visit_notes: form.last_visit_notes.trim() || null,
                 updated_at: new Date().toISOString(),
@@ -142,7 +148,7 @@ export default function PatientDetail() {
 
                         <div style={fieldStyle}>
                             <label>Current Medications</label>
-                            <textarea name="medications" value={form.medications} onChange={handleChange} rows={3} />
+                            <MedicationSelector value={editMeds} onChange={setEditMeds} />
                         </div>
 
                         <div style={fieldStyle}>
@@ -157,7 +163,7 @@ export default function PatientDetail() {
 
                         <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
                             <button type="submit" disabled={saving}>{saving ? "Saving..." : "Save"}</button>
-                            <button type="button" onClick={() => { setEditing(false); setForm(toForm(patient)); setError(""); }}>Cancel</button>
+                            <button type="button" onClick={() => { setEditing(false); setForm(toForm(patient)); setEditMeds([]); setError(""); }}>Cancel</button>
                         </div>
                     </form>
                 ) : (

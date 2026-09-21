@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase.js";
+import MedicationSelector from "../components/MedicationSelector.jsx";
 
 const VISIT_TYPES = ["Initial", "Follow-up", "Emergency", "Routine", "Specialist", "Other"];
 const APPT_TYPES  = ["Follow-up", "Initial Consultation", "Specialist Referral", "Routine Check-up", "Emergency", "Other"];
@@ -14,7 +15,8 @@ export default function StudentPatientDetail() {
 
     // visit form
     const [showVisitForm, setShowVisitForm] = useState(false);
-    const [visitForm, setVisitForm] = useState({ visit_type: "Follow-up", notes: "", medications: "" });
+    const [visitForm, setVisitForm] = useState({ visit_type: "Follow-up", notes: "" });
+    const [selectedMeds, setSelectedMeds] = useState([]); // [{ medicine, dosage, frequency }]
     const [visitSubmitting, setVisitSubmitting] = useState(false);
     const [visitError, setVisitError] = useState("");
 
@@ -47,18 +49,24 @@ export default function StudentPatientDetail() {
         setVisitSubmitting(true);
 
         const { data: { user } } = await supabase.auth.getUser();
+
+        const medicationsText = selectedMeds.length > 0
+            ? selectedMeds.map((m) => `${m.medicine.name} ${m.dosage}${m.medicine.unit} ${m.frequency}x/day`).join(", ")
+            : null;
+
         const { error } = await supabase.from("visits").insert({
             patient_id: id,
             visit_type: visitForm.visit_type,
             notes: visitForm.notes.trim() || null,
-            medications: visitForm.medications.trim() || null,
+            medications: medicationsText,
             created_by: user.id,
         });
 
         if (error) {
             setVisitError("Failed to add visit. Please try again.");
         } else {
-            setVisitForm({ visit_type: "Follow-up", notes: "", medications: "" });
+            setVisitForm({ visit_type: "Follow-up", notes: "" });
+            setSelectedMeds([]);
             setShowVisitForm(false);
             await fetchData();
         }
@@ -204,11 +212,9 @@ export default function StudentPatientDetail() {
 
                             <div style={fieldStyle}>
                                 <label>Medications</label>
-                                <textarea
-                                    value={visitForm.medications}
-                                    onChange={(e) => setVisitForm({ ...visitForm, medications: e.target.value })}
-                                    rows={2}
-                                    placeholder="List current medications..."
+                                <MedicationSelector
+                                    value={selectedMeds}
+                                    onChange={setSelectedMeds}
                                 />
                             </div>
 
