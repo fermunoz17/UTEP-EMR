@@ -3,7 +3,7 @@ import { logout } from "../services/auth.js";
 
 export default function Header({ user }) {
   const profile = user?.profile ?? {};
-  
+
   const fullName =
     profile.full_name ||
     profile.name ||
@@ -11,10 +11,12 @@ export default function Header({ user }) {
     user?.email ||
     "User";
 
+  const accountType = profile.account_type ?? "user";
+
+  // Capitalize the database value for display.
   const role =
-    profile.role ||
-    profile.discipline ||
-    "User";
+    accountType.charAt(0).toUpperCase() +
+    accountType.slice(1);
 
   async function handleLogout() {
     try {
@@ -23,7 +25,7 @@ export default function Header({ user }) {
       console.error("Unable to log out:", error);
     }
   }
-  
+
   return (
     <header className="emr-header">
       <div className="emr-brand">

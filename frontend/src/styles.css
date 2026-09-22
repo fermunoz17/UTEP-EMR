@@ -923,3 +923,196 @@ button {
   color: var(--text-muted);
   font-size: 0.78rem;
 }
+
+/* Student Management */
+
+/* Constrain the page width while allowing it to fill smaller screens. */
+.student-management-main {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2.25rem 2rem 3rem;
+}
+
+/* Place the title and back button on opposite sides of the header. */
+.student-management-header {
+  margin-bottom: 1.5rem;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.student-management-header h2 {
+  margin: 0;
+
+  color: var(--text);
+  font-size: 2rem;
+}
+
+.student-management-header > div > p:last-child {
+  margin: 0.35rem 0 0;
+
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Secondary command used to return to the dashboard. */
+.secondary-action-button {
+  padding: 0.65rem 0.9rem;
+
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+
+  background: var(--surface);
+  color: var(--text-secondary);
+
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.secondary-action-button:hover:not(:disabled) {
+  background: var(--bg);
+  border-color: #94a3b8;
+}
+
+.secondary-action-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Main form surface. */
+.student-form-panel {
+  max-width: 760px;
+  padding: 1.5rem;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.student-form-heading {
+  margin-bottom: 1.25rem;
+}
+
+.student-form-heading h3 {
+  margin: 0;
+
+  color: var(--text);
+  font-size: 1.1rem;
+}
+
+.student-form-heading p {
+  margin: 0.3rem 0 0;
+
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* Display the form in two columns on larger screens. */
+.student-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.student-form-field {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.student-form-field-wide {
+  grid-column: 1 / -1;
+}
+
+.student-form-field label {
+  color: var(--text-secondary);
+
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.student-form-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.65rem 0.75rem;
+
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+
+  background: white;
+  color: var(--text);
+}
+
+.student-form-field input:focus {
+  border-color: var(--primary);
+  outline: 3px solid var(--primary-light);
+}
+
+.student-form-field input:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+/* Keep the submit command aligned with the right side of the form. */
+.student-form-actions {
+  margin-top: 1.25rem;
+
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Shared layout for success and error feedback. */
+.form-message {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.85rem;
+
+  border: 1px solid;
+  border-radius: 6px;
+
+  font-size: 0.82rem;
+}
+
+.form-message-error {
+  border-color: #fecaca;
+
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.form-message-success {
+  border-color: #a7f3d0;
+
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+/* Stack the page header and form fields on smaller screens. */
+@media (max-width: 700px) {
+  .student-management-main {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .student-management-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .student-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .student-form-field-wide {
+    grid-column: auto;
+  }
+
+  .student-form-actions,
+  .student-form-actions .primary-action-button {
+    width: 100%;
+  }
+}
