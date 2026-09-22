@@ -8,6 +8,7 @@ import PatientDetail from "./pages/PatientDetail.jsx";
 import PatientLookup from "./pages/PatientLookup.jsx";
 import StudentPatientDetail from "./pages/StudentPatientDetail.jsx";
 import Appointments from "./pages/Appointments.jsx";
+import StudentManagement from "./pages/StudentManagement.jsx";
 
 import {
     getSession,
@@ -84,16 +85,26 @@ export default function App() {
     if (!user) return <p>Loading account...</p>;
 
     const isAdmin = user.profile.account_type === "admin";
-
-    const navbarPage = nav.page === "patientManager" || nav.page === "patientDetail" ? "patients"
-        : nav.page === "patientLookup" || nav.page === "studentPatientDetail" ? "patients"
-        : nav.page === "appointments" ? "appointments"
-        : "dashboard";
+    // Both administrators and instructors may access student management.
+    const canManageStudents = ["admin", "instructor"].includes(
+        user.profile.account_type,
+    );
+    const navbarPage = nav.page === "studentManagement" ? "students"
+        : nav.page === "patientManager" || nav.page === "patientDetail" ? "patients"
+            : nav.page === "patientLookup" || nav.page === "studentPatientDetail" ? "patients"
+                : nav.page === "appointments" ? "appointments"
+                    : "dashboard";
 
     function handleNavbarNavigate(page) {
-        if (page === "patients") navigate(isAdmin ? "patientManager" : "patientLookup");
-        else if (page === "appointments") navigate("appointments");
-        else navigate("dashboard");
+        if (page === "students" && canManageStudents) {
+            navigate("studentManagement");
+        } else if (page === "patients") {
+            navigate(isAdmin ? "patientManager" : "patientLookup");
+        } else if (page === "appointments") {
+            navigate("appointments");
+        } else {
+            navigate("dashboard");
+        }
     }
 
     let pageContent;
@@ -109,6 +120,11 @@ export default function App() {
             break;
         case "studentPatientDetail":
             pageContent = <StudentPatientDetail id={nav.id} onNavigate={navigate} />;
+            break;
+        case "studentManagement":
+            pageContent = canManageStudents
+                ? <StudentManagement onNavigate={navigate} />
+                : <Dashboard user={user} onNavigate={navigate} />;
             break;
         case "appointments":
             pageContent = <Appointments onNavigate={navigate} />;

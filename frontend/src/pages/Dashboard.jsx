@@ -10,7 +10,10 @@ export default function Dashboard({ user, onNavigate }) {
         "User";
 
     const isAdmin = profile.account_type === "admin";
-
+    // Admins and instructors can create student accounts.
+    const canManageStudents = ["admin", "instructor"].includes(
+        profile.account_type,
+    );
     function handleComingSoon(feature) {
         alert(`${feature} will be implemented next.`);
     }
@@ -117,6 +120,23 @@ export default function Dashboard({ user, onNavigate }) {
                                     <span className="quick-arrow" aria-hidden="true">→</span>
                                 </button>
                             </>
+                        )}
+
+                        {canManageStudents && (
+                            <button
+                                className="quick-access-card"
+                                type="button"
+                                onClick={() => onNavigate("studentManagement")}
+                            >
+                                <span className="quick-icon" aria-hidden="true">+</span>
+
+                                <span className="quick-content">
+                                    <strong>Student Accounts</strong>
+                                    <small>Create student login accounts</small>
+                                </span>
+
+                                <span className="quick-arrow" aria-hidden="true">→</span>
+                            </button>
                         )}
 
                         <button className="quick-access-card" type="button" onClick={() => handleComingSoon("Provider Directory")}>
