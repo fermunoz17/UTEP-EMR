@@ -80,3 +80,6 @@ npm run dev
 - **`main`**: Production / release branch.
 - **`develop`**: Primary integration branch for active development.
 - **`feature/<name>`**: Feature branches cut from `develop` and merged via Pull Request.
+## Seeding Test Data
+We have included a seed script to easily populate your local database with test users and sample patient data. 
+See the **[Seeding Guide](frontend/SEEDING.md)** for instructions on how to run it and add your own test data.
