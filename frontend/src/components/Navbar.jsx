@@ -40,6 +40,16 @@ export default function Navbar({ currentPage, onNavigate, user }) {
           </button>
         )}
 
+        {profile.account_type === "instructor" || profile.account_type === "admin" ? (
+          <button
+            className={`nav-link ${currentPage === "cases" ? "active" : ""}`}
+            type="button"
+            onClick={() => onNavigate("cases")}
+          >
+            Cases
+          </button>
+        ) : null}
+
         {/* TODO: Implement Providers Page */}
         <button
           className="nav-link"

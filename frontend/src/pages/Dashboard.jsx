@@ -138,6 +138,21 @@ export default function Dashboard({ user, onNavigate }) {
                                 <span className="quick-arrow" aria-hidden="true">→</span>
                             </button>
                         )}
+                        {/* Instructor Dashboard */}
+                        {profile.account_type === "instructor" && (
+                            <button
+                                className="quick-access-card"
+                                type="button"
+                                onClick={() => onNavigate("instructorCases")}
+                            >
+                                <span className="quick-icon" aria-hidden="true">📋</span>
+                                <span className="quick-content">
+                                    <strong>Case Management</strong>
+                                    <small>Create and assign training cases</small>
+                                </span>
+                                <span className="quick-arrow" aria-hidden="true">→</span>
+                            </button>
+                        )}
 
                         <button className="quick-access-card" type="button" onClick={() => handleComingSoon("Provider Directory")}>
                             <span className="quick-icon" aria-hidden="true">👥</span>
