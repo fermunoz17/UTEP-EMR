@@ -28,27 +28,41 @@ async function seed() {
       email_confirm: true
     });
 
+    let userId;
+
     if (authError) {
-      if (authError.message.includes('User already registered')) {
-        console.log(`User ${u.email} already exists.`);
-        // Note: For a robust script, we might want to fetch the existing user id here to update profile
+      if (authError.message.includes('already registered') || authError.message.includes('already been registered')) {
+        // User exists in auth — look up their ID so we can still update the profile
+        const { data: list, error: listError } = await supabase.auth.admin.listUsers();
+        if (listError) {
+          console.error(`Could not list users to find ${u.email}:`, listError.message);
+          continue;
+        }
+        const existing = list.users.find((usr) => usr.email === u.email);
+        if (!existing) {
+          console.error(`Could not find existing user for ${u.email}`);
+          continue;
+        }
+        userId = existing.id;
+        console.log(`User ${u.email} already exists, ensuring profile is up to date...`);
       } else {
         console.error(`Error creating ${u.email}:`, authError.message);
+        continue;
       }
-      continue;
+    } else {
+      userId = authData.user.id;
     }
 
-    const userId = authData.user.id;
-
-    // 2. Update Profile with Roles and Names
+    // 2. Upsert Profile — works whether the profile row exists or not
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({
+      .upsert({
+        user_id: userId,
         first_name: u.firstName,
         last_name: u.lastName,
-        account_type: u.role
-      })
-      .eq('user_id', userId);
+        account_type: u.role,
+        active: true
+      }, { onConflict: 'user_id' });
 
     if (profileError) {
       console.error(`Error updating profile for ${u.email}:`, profileError.message);

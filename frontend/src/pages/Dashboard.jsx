@@ -100,6 +100,25 @@ export default function Dashboard({ user, onNavigate }) {
                                 </span>
                                 <span className="quick-arrow" aria-hidden="true">→</span>
                             </button>
+                        ) : profile.account_type === "student" ? (
+                            <>
+                                <button className="quick-access-card" type="button" onClick={() => onNavigate("studentCases")}>
+                                    <span className="quick-icon" aria-hidden="true">📋</span>
+                                    <span className="quick-content">
+                                        <strong>My Cases</strong>
+                                        <small>View training cases assigned to you</small>
+                                    </span>
+                                    <span className="quick-arrow" aria-hidden="true">→</span>
+                                </button>
+                                <button className="quick-access-card" type="button" onClick={() => onNavigate("patientLookup")}>
+                                    <span className="quick-icon" aria-hidden="true">🔍</span>
+                                    <span className="quick-content">
+                                        <strong>Patient Lookup</strong>
+                                        <small>Find and open a patient record</small>
+                                    </span>
+                                    <span className="quick-arrow" aria-hidden="true">→</span>
+                                </button>
+                            </>
                         ) : (
                             <>
                                 <button className="quick-access-card" type="button" onClick={() => onNavigate("patientLookup")}>

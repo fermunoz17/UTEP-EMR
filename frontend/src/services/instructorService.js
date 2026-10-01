@@ -100,6 +100,28 @@ export async function getMyAssignedCases() {
     return data;
 }
 
+export async function signOffCase(caseId) {
+    const { data, error } = await supabase
+        .from("assigned_cases")
+        .update({ encounter_status: "completed", updated_at: new Date().toISOString() })
+        .eq("id", caseId)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
+export async function returnCase(caseId) {
+    const { data, error } = await supabase
+        .from("assigned_cases")
+        .update({ encounter_status: "in progress", updated_at: new Date().toISOString() })
+        .eq("id", caseId)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
 export async function assignCase(templateId, studentId, patientSnapshot) {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase

@@ -12,6 +12,7 @@ import StudentManagement from "./pages/StudentManagement.jsx";
 import InstructorCases from "./pages/InstructorCases.jsx";
 import TemplateBuilder from "./pages/TemplateBuilder.jsx";
 import CaseAssign from "./pages/CaseAssign.jsx";
+import StudentCases from "./pages/StudentCases.jsx";
 
 import {
     getSession,
@@ -101,6 +102,7 @@ export default function App() {
         : nav.page === "patientLookup" || nav.page === "studentPatientDetail" ? "patients"
         : nav.page === "appointments" ? "appointments"
         : nav.page === "instructorCases" || nav.page === "templateBuilder" || nav.page === "caseAssign" ? "cases"
+        : nav.page === "studentCases" ? "myCases"
         : "dashboard";
 
     function handleNavbarNavigate(page) {
@@ -108,6 +110,8 @@ export default function App() {
             navigate("studentManagement");
         } else if (page === "cases" && canManageCases) {
             navigate("instructorCases");
+        } else if (page === "myCases") {
+            navigate("studentCases");
         } else if (page === "patients") {
             navigate(isAdmin ? "patientManager" : "patientLookup");
         } else if (page === "appointments") {
@@ -153,6 +157,9 @@ export default function App() {
             pageContent = canManageCases
                 ? <CaseAssign templateId={nav.id} onNavigate={navigate} />
                 : <Dashboard user={user} onNavigate={navigate} />;
+            break;
+        case "studentCases":
+            pageContent = <StudentCases onNavigate={navigate} />;
             break;
         case "dashboard":
         default:
