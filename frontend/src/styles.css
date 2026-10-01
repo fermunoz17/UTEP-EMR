@@ -1672,4 +1672,22 @@ button {
   white-space: pre-wrap;
   min-height: 5rem;
 }
+
+.instructor-feedback-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  resize: vertical;
+  font-family: inherit;
+  background: #f8fafc;
+}
+
+.instructor-feedback-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: #fff;
 }

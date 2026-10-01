@@ -24,6 +24,7 @@ export default function InstructorCases({ onNavigate }) {
     const [reviewCase, setReviewCase] = useState(null);
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const [reviewError, setReviewError] = useState("");
+    const [feedbackText, setFeedbackText] = useState("");
 
     useEffect(() => {
         fetchAll();
@@ -96,13 +97,14 @@ export default function InstructorCases({ onNavigate }) {
     function closeReview() {
         setReviewCase(null);
         setReviewError("");
+        setFeedbackText("");
     }
 
     async function handleSignOff() {
         setReviewSubmitting(true);
         setReviewError("");
         try {
-            const updated = await signOffCase(reviewCase.id);
+            const updated = await signOffCase(reviewCase.id, feedbackText);
             setCases((prev) => prev.map((c) => c.id === updated.id ? { ...c, encounter_status: updated.encounter_status } : c));
             closeReview();
         } catch (err) {
@@ -116,7 +118,7 @@ export default function InstructorCases({ onNavigate }) {
         setReviewSubmitting(true);
         setReviewError("");
         try {
-            const updated = await returnCase(reviewCase.id);
+            const updated = await returnCase(reviewCase.id, feedbackText);
             setCases((prev) => prev.map((c) => c.id === updated.id ? { ...c, encounter_status: updated.encounter_status } : c));
             closeReview();
         } catch (err) {
@@ -399,6 +401,20 @@ export default function InstructorCases({ onNavigate }) {
 
                             {reviewError && (
                                 <p className="form-message form-message-error" role="alert">{reviewError}</p>
+                            )}
+
+                            {reviewCase.encounter_status === "pending review" && (
+                                <div className="case-modal-section">
+                                    <p className="case-modal-section-label">Instructor Feedback</p>
+                                    <textarea
+                                        className="instructor-feedback-textarea"
+                                        placeholder="Enter feedback for the student..."
+                                        value={feedbackText}
+                                        onChange={(e) => setFeedbackText(e.target.value)}
+                                        disabled={reviewSubmitting}
+                                        rows={4}
+                                    />
+                                </div>
                             )}
                         </div>
 

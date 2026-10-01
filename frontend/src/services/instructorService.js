@@ -100,10 +100,10 @@ export async function getMyAssignedCases() {
     return data;
 }
 
-export async function signOffCase(caseId) {
+export async function signOffCase(caseId, instructorFeedback) {
     const { data, error } = await supabase
         .from("assigned_cases")
-        .update({ encounter_status: "completed", updated_at: new Date().toISOString() })
+        .update({ encounter_status: "completed", instructor_feedback: instructorFeedback, updated_at: new Date().toISOString() })
         .eq("id", caseId)
         .select()
         .single();
@@ -111,10 +111,10 @@ export async function signOffCase(caseId) {
     return data;
 }
 
-export async function returnCase(caseId) {
+export async function returnCase(caseId, instructorFeedback) {
     const { data, error } = await supabase
         .from("assigned_cases")
-        .update({ encounter_status: "in progress", updated_at: new Date().toISOString() })
+        .update({ encounter_status: "in progress", instructor_feedback: instructorFeedback, updated_at: new Date().toISOString() })
         .eq("id", caseId)
         .select()
         .single();
