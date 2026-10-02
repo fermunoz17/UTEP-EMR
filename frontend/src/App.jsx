@@ -89,6 +89,7 @@ export default function App() {
     if (!user) return <p>Loading account...</p>;
 
     const isAdmin = user.profile.account_type === "admin";
+    const isInstructor = user.profile.account_type === "instructor";
     const canManageStudents = ["admin", "instructor"].includes(
         user.profile.account_type,
     );
@@ -113,7 +114,7 @@ export default function App() {
         } else if (page === "myCases") {
             navigate("studentCases");
         } else if (page === "patients") {
-            navigate(isAdmin ? "patientManager" : "patientLookup");
+            navigate(isAdmin || isInstructor ? "patientManager" : "patientLookup");
         } else if (page === "appointments") {
             navigate("appointments");
         } else {

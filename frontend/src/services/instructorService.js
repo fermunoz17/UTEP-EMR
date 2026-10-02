@@ -3,7 +3,7 @@ import { supabase } from "../supabase.js";
 export async function searchPatients(query) {
     let q = supabase
         .from("patients")
-        .select("id, first_name, last_name, age, sex, occupation, medications, last_visit_notes")
+        .select("id, first_name, last_name, age, sex, occupation, current_medications, last_visit_notes")
         .order("last_name");
 
     if (query.trim()) {
@@ -20,7 +20,7 @@ export async function searchPatients(query) {
 export async function getPatientById(id) {
     const { data, error } = await supabase
         .from("patients")
-        .select("id, first_name, last_name, age, sex, occupation, medications, last_visit_notes")
+        .select("*")
         .eq("id", id)
         .single();
     if (error) throw error;

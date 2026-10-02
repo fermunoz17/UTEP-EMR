@@ -5,6 +5,7 @@ import {
     saveCaseNotes,
     submitCase,
 } from "../services/studentCaseService.js";
+import TagSelector from "../components/TagSelector.jsx";
 
 const STATUS_STYLES = {
     "not started":    { background: "#f1f5f9", color: "#64748b" },
@@ -211,6 +212,12 @@ export default function StudentCases({ onNavigate }) {
                                             <span>{activeCase.patient_snapshot.age}</span>
                                         </div>
                                     )}
+                                    {activeCase.patient_snapshot?.date_of_birth && (
+                                        <div className="case-info-item">
+                                            <span className="case-info-label">DOB</span>
+                                            <span>{activeCase.patient_snapshot.date_of_birth}</span>
+                                        </div>
+                                    )}
                                     {activeCase.patient_snapshot?.sex && (
                                         <div className="case-info-item">
                                             <span className="case-info-label">Sex</span>
@@ -223,6 +230,24 @@ export default function StudentCases({ onNavigate }) {
                                             <span>{activeCase.patient_snapshot.occupation}</span>
                                         </div>
                                     )}
+                                    {activeCase.patient_snapshot?.phone_number && (
+                                        <div className="case-info-item">
+                                            <span className="case-info-label">Phone</span>
+                                            <span>{activeCase.patient_snapshot.phone_number}</span>
+                                        </div>
+                                    )}
+                                    {activeCase.patient_snapshot?.email && (
+                                        <div className="case-info-item">
+                                            <span className="case-info-label">Email</span>
+                                            <span>{activeCase.patient_snapshot.email}</span>
+                                        </div>
+                                    )}
+                                    {activeCase.patient_snapshot?.emergency_contacts?.[0] && (
+                                        <div className="case-info-item">
+                                            <span className="case-info-label">Emergency Contact</span>
+                                            <span>{activeCase.patient_snapshot.emergency_contacts[0].name} ({activeCase.patient_snapshot.emergency_contacts[0].phone})</span>
+                                        </div>
+                                    )}
                                 </div>
                                 {activeCase.patient_snapshot?.chief_complaint && (
                                     <div className="case-complaint-box">
@@ -231,6 +256,33 @@ export default function StudentCases({ onNavigate }) {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Medical Information */}
+                            {(activeCase.patient_snapshot?.allergies?.length > 0 || activeCase.patient_snapshot?.medical_history?.length > 0 || activeCase.patient_snapshot?.current_medications?.length > 0) && (
+                                <div className="case-modal-section">
+                                    <p className="case-modal-section-label">Medical Information</p>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                                        {activeCase.patient_snapshot?.allergies?.length > 0 && (
+                                            <div>
+                                                <span className="case-info-label">Allergies</span>
+                                                <TagSelector value={activeCase.patient_snapshot.allergies} readOnly={true} />
+                                            </div>
+                                        )}
+                                        {activeCase.patient_snapshot?.medical_history?.length > 0 && (
+                                            <div>
+                                                <span className="case-info-label">Medical History</span>
+                                                <TagSelector value={activeCase.patient_snapshot.medical_history} readOnly={true} />
+                                            </div>
+                                        )}
+                                        {activeCase.patient_snapshot?.current_medications?.length > 0 && (
+                                            <div>
+                                                <span className="case-info-label">Medications</span>
+                                                <TagSelector value={activeCase.patient_snapshot.current_medications.map(m => `${m.medicine.name} ${m.dosage}${m.medicine.unit} ${m.frequency}x/day`)} readOnly={true} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Clinical baseline */}
                             {activeCase.patient_snapshot?.clinical_baseline &&

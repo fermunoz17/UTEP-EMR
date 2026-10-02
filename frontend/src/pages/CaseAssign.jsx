@@ -59,9 +59,19 @@ export default function CaseAssign({ templateId, onNavigate }) {
         const patientSnapshot = {
             first_name: template.first_name,
             last_name: template.last_name,
+            date_of_birth: template.date_of_birth,
             age: template.age,
             sex: template.sex,
+            phone_number: template.phone_number,
+            email: template.email,
             occupation: template.occupation,
+            emergency_contacts: template.emergency_contact_name || template.emergency_contact_phone ? [{
+                name: template.emergency_contact_name || "",
+                phone: template.emergency_contact_phone || ""
+            }] : [],
+            allergies: template.allergies,
+            medical_history: template.medical_history,
+            current_medications: template.current_medications,
             chief_complaint: template.chief_complaint,
             clinical_baseline: template.clinical_baseline,
         };

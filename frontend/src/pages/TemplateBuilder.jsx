@@ -5,13 +5,22 @@ import {
     createTemplate,
     updateTemplate,
 } from "../services/instructorService.js";
+import TagSelector from "../components/TagSelector.jsx";
+import MedicationSelector from "../components/MedicationSelector.jsx";
 
 const EMPTY_FORM = {
     first_name: "",
     last_name: "",
+    date_of_birth: "",
     age: "",
     sex: "",
+    phone_number: "",
+    email: "",
     occupation: "",
+    emergency_contact_name: "",
+    emergency_contact_phone: "",
+    allergies: [],
+    medical_history: [],
     chief_complaint: "",
 };
 
@@ -24,6 +33,8 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
     const [loading, setLoading] = useState(isEditing || isFromPatient);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
+    const [activeTab, setActiveTab] = useState("allergies");
+    const [medications, setMedications] = useState([]);
 
     useEffect(() => {
         if (isEditing) {
@@ -33,11 +44,23 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                     setForm({
                         first_name: t.first_name,
                         last_name: t.last_name,
+                        date_of_birth: t.date_of_birth ?? "",
                         age: String(t.age),
                         sex: t.sex ?? "",
+                        phone_number: t.phone_number ?? "",
+                        email: t.email ?? "",
                         occupation: t.occupation ?? "",
+                        emergency_contact_name: t.emergency_contact_name ?? "",
+                        emergency_contact_phone: t.emergency_contact_phone ?? "",
+                        allergies: Array.isArray(t.allergies) ? t.allergies : [],
+                        medical_history: Array.isArray(t.medical_history) ? t.medical_history : [],
                         chief_complaint: t.chief_complaint,
                     });
+                    
+                    if (t.current_medications) {
+                        setMedications(Array.isArray(t.current_medications) ? t.current_medications : []);
+                    }
+
                     const entries = Object.entries(t.clinical_baseline ?? {});
                     setBaseline(
                         entries.length > 0
@@ -61,16 +84,24 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                     setForm({
                         first_name: p.first_name,
                         last_name: p.last_name,
+                        date_of_birth: p.date_of_birth ?? "",
                         age: String(p.age),
                         sex: p.sex ?? "",
+                        phone_number: p.phone_number ?? "",
+                        email: p.email ?? "",
                         occupation: p.occupation ?? "",
-                        // Chief complaint is pre-poplated with last vist
+                        emergency_contact_name: p.emergency_contacts?.[0]?.name ?? "",
+                        emergency_contact_phone: p.emergency_contacts?.[0]?.phone ?? "",
+                        allergies: Array.isArray(p.allergies) ? p.allergies : [],
+                        medical_history: Array.isArray(p.medical_history) ? p.medical_history : [],
                         chief_complaint: p.last_visit_notes ?? "",
                     });
-                    // Pre-populate clinical baseline with medications if present
-                    const baselineRows = p.medications
-                        ? [{ key: "Medications", value: p.medications }]
-                        : [{ key: "", value: "" }];
+                    
+                    if (p.current_medications) {
+                        setMedications(Array.isArray(p.current_medications) ? p.current_medications : []);
+                    }
+
+                    const baselineRows = [{ key: "", value: "" }];
                     setBaseline(baselineRows);
                 } catch (err) {
                     console.error(err);
@@ -126,9 +157,17 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
         const payload = {
             first_name: form.first_name.trim(),
             last_name: form.last_name.trim(),
+            date_of_birth: form.date_of_birth || null,
             age,
-            sex: form.sex,
+            sex: form.sex || null,
+            phone_number: form.phone_number || null,
+            email: form.email || null,
             occupation: form.occupation.trim() || null,
+            emergency_contact_name: form.emergency_contact_name.trim() || null,
+            emergency_contact_phone: form.emergency_contact_phone.trim() || null,
+            allergies: form.allergies,
+            medical_history: form.medical_history,
+            current_medications: medications,
             chief_complaint: form.chief_complaint.trim(),
             clinical_baseline,
         };
@@ -242,6 +281,66 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                             />
                         </div>
 
+                        <div className="student-form-field">
+                            <label htmlFor="date_of_birth">Date of Birth</label>
+                            <input
+                                id="date_of_birth"
+                                name="date_of_birth"
+                                type="date"
+                                value={form.date_of_birth}
+                                onChange={handleChange}
+                                disabled={isFromPatient || submitting}
+                            />
+                        </div>
+
+                        <div className="student-form-field">
+                            <label htmlFor="phone_number">Phone</label>
+                            <input
+                                id="phone_number"
+                                name="phone_number"
+                                type="tel"
+                                value={form.phone_number}
+                                onChange={handleChange}
+                                disabled={isFromPatient || submitting}
+                            />
+                        </div>
+
+                        <div className="student-form-field">
+                            <label htmlFor="email">Email</label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                disabled={isFromPatient || submitting}
+                            />
+                        </div>
+
+                        <div className="student-form-field">
+                            <label htmlFor="emergency_contact_name">Emergency Contact Name</label>
+                            <input
+                                id="emergency_contact_name"
+                                name="emergency_contact_name"
+                                type="text"
+                                value={form.emergency_contact_name}
+                                onChange={handleChange}
+                                disabled={isFromPatient || submitting}
+                            />
+                        </div>
+
+                        <div className="student-form-field">
+                            <label htmlFor="emergency_contact_phone">Emergency Contact Phone</label>
+                            <input
+                                id="emergency_contact_phone"
+                                name="emergency_contact_phone"
+                                type="tel"
+                                value={form.emergency_contact_phone}
+                                onChange={handleChange}
+                                disabled={isFromPatient || submitting}
+                            />
+                        </div>
+
                         <div className="student-form-field instructor-form-wide">
                             <label htmlFor="occupation">Occupation</label>
                             <input
@@ -267,6 +366,41 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                                 className="instructor-textarea"
                             />
                         </div>
+                    </div>
+                </div>
+
+                {/* ── Medical Information ────────────────────────── */}
+                <div className="instructor-form-section">
+                    <h3 className="instructor-form-section-title" style={{ textAlign: "center" }}>Medical Information</h3>
+                    <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "1rem" }}>
+                        <button type="button" onClick={() => setActiveTab("allergies")} style={{ fontWeight: activeTab === "allergies" ? "bold" : "normal" }}>Allergies</button>
+                        <button type="button" onClick={() => setActiveTab("history")} style={{ fontWeight: activeTab === "history" ? "bold" : "normal" }}>Medical History</button>
+                        <button type="button" onClick={() => setActiveTab("medications")} style={{ fontWeight: activeTab === "medications" ? "bold" : "normal" }}>Medications</button>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", marginBottom: "0.75rem", flex: 1 }}>
+                        {activeTab === "allergies" && (
+                            <TagSelector 
+                                value={form.allergies} 
+                                onChange={(newArr) => setForm({ ...form, allergies: newArr })} 
+                                placeholder="Add allergy (press Enter or comma)..." 
+                            />
+                        )}
+
+                        {activeTab === "history" && (
+                            <TagSelector 
+                                value={form.medical_history} 
+                                onChange={(newArr) => setForm({ ...form, medical_history: newArr })} 
+                                placeholder="Add condition (press Enter or comma)..." 
+                            />
+                        )}
+
+                        {activeTab === "medications" && (
+                            <MedicationSelector 
+                                value={medications} 
+                                onChange={setMedications} 
+                            />
+                        )}
                     </div>
                 </div>
 
