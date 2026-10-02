@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyTemplates, getMyAssignedCases, deleteTemplate, searchPatients, signOffCase, returnCase } from "../services/instructorService.js";
+import { getCaseAuditLogs } from "../services/auditService.js";
 
 const STATUS_STYLES = {
     "not started":    { background: "#f1f5f9", color: "#64748b" },
@@ -25,6 +26,11 @@ export default function InstructorCases({ onNavigate }) {
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const [reviewError, setReviewError] = useState("");
     const [feedbackText, setFeedbackText] = useState("");
+
+    // Audit log modal
+    const [auditLogs, setAuditLogs] = useState([]);
+    const [auditModalOpen, setAuditModalOpen] = useState(false);
+    const [auditLoading, setAuditLoading] = useState(false);
 
     useEffect(() => {
         fetchAll();
@@ -98,6 +104,24 @@ export default function InstructorCases({ onNavigate }) {
         setReviewCase(null);
         setReviewError("");
         setFeedbackText("");
+    }
+
+    async function openAuditModal(caseId) {
+        setAuditModalOpen(true);
+        setAuditLoading(true);
+        try {
+            const logs = await getCaseAuditLogs(caseId);
+            setAuditLogs(logs);
+        } catch (err) {
+            console.error(err);
+            setAuditLogs([]);
+        }
+        setAuditLoading(false);
+    }
+
+    function closeAuditModal() {
+        setAuditModalOpen(false);
+        setAuditLogs([]);
     }
 
     async function handleSignOff() {
@@ -289,15 +313,24 @@ export default function InstructorCases({ onNavigate }) {
                                                 </td>
                                                 <td>{new Date(c.assigned_at).toLocaleDateString()}</td>
                                                 <td>
-                                                    {(c.encounter_status === "pending review" || c.encounter_status === "completed") && (
+                                                    <div className="instructor-row-actions">
+                                                        {(c.encounter_status === "pending review" || c.encounter_status === "completed") && (
+                                                            <button
+                                                                className="instructor-action-btn instructor-action-edit"
+                                                                type="button"
+                                                                onClick={() => openReview(c)}
+                                                            >
+                                                                {c.encounter_status === "pending review" ? "Review" : "View"}
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            className="instructor-action-btn instructor-action-edit"
+                                                            className="instructor-action-btn instructor-action-assign"
                                                             type="button"
-                                                            onClick={() => openReview(c)}
+                                                            onClick={() => openAuditModal(c.id)}
                                                         >
-                                                            {c.encounter_status === "pending review" ? "Review" : "View"}
+                                                            Audit Log
                                                         </button>
-                                                    )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -501,6 +534,73 @@ export default function InstructorCases({ onNavigate }) {
                                 ))}
                             </ul>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Audit Log Modal ────────────────────────────────── */}
+            {auditModalOpen && (
+                <div style={overlayStyle} onClick={closeAuditModal}>
+                    <div style={{ ...modalStyle, maxWidth: "640px", padding: 0 }} onClick={(e) => e.stopPropagation()}>
+
+                        <div className="case-modal-header">
+                            <div>
+                                <p className="section-title" style={{ margin: 0 }}>Case History</p>
+                                <h3 style={{ margin: "0.2rem 0 0" }}>Audit Log</h3>
+                            </div>
+                            <button
+                                className="instructor-baseline-remove"
+                                type="button"
+                                onClick={closeAuditModal}
+                                aria-label="Close"
+                                style={{ width: 32, height: 32, fontSize: "1.2rem" }}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="case-modal-body">
+                            {auditLoading ? (
+                                <p className="instructor-loading">Loading audit log…</p>
+                            ) : auditLogs.length === 0 ? (
+                                <p className="instructor-loading">No audit entries for this case yet.</p>
+                            ) : (
+                                <div className="patient-table-wrapper">
+                                    <table className="patient-table">
+                                        <thead>
+                                            <tr>
+                                                <th>When</th>
+                                                <th>Actor</th>
+                                                <th>Action</th>
+                                                <th>Detail</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {auditLogs.map((log) => (
+                                                <tr key={log.id} className="instructor-table-row">
+                                                    <td style={{ whiteSpace: "nowrap" }}>
+                                                        {new Date(log.created_at).toLocaleString()}
+                                                    </td>
+                                                    <td>
+                                                        {log.profiles
+                                                            ? `${log.profiles.first_name} ${log.profiles.last_name}`
+                                                            : "—"}
+                                                    </td>
+                                                    <td>
+                                                        <span className="instructor-status-badge" style={STATUS_STYLES["in progress"]}>
+                                                            {log.action_type.replace(/_/g, " ")}
+                                                        </span>
+                                                    </td>
+                                                    <td className="instructor-complaint-cell">
+                                                        {log.new_value ?? log.old_value ?? "—"}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

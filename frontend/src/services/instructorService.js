@@ -1,4 +1,5 @@
 import { supabase } from "../supabase.js";
+import { logCaseAction, ACTION_TYPES } from "./auditService.js";
 
 export async function searchPatients(query) {
     let q = supabase
@@ -101,6 +102,7 @@ export async function getMyAssignedCases() {
 }
 
 export async function signOffCase(caseId, instructorFeedback) {
+    const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
         .from("assigned_cases")
         .update({ encounter_status: "completed", instructor_feedback: instructorFeedback, updated_at: new Date().toISOString() })
@@ -108,10 +110,15 @@ export async function signOffCase(caseId, instructorFeedback) {
         .select()
         .single();
     if (error) throw error;
+    await logCaseAction(caseId, user.id, ACTION_TYPES.CASE_SIGNED_OFF, "pending review", "completed").catch(() => {});
+    if (instructorFeedback?.trim()) {
+        await logCaseAction(caseId, user.id, ACTION_TYPES.FEEDBACK_ADDED, null, instructorFeedback.trim()).catch(() => {});
+    }
     return data;
 }
 
 export async function returnCase(caseId, instructorFeedback) {
+    const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
         .from("assigned_cases")
         .update({ encounter_status: "in progress", instructor_feedback: instructorFeedback, updated_at: new Date().toISOString() })
@@ -119,6 +126,10 @@ export async function returnCase(caseId, instructorFeedback) {
         .select()
         .single();
     if (error) throw error;
+    await logCaseAction(caseId, user.id, ACTION_TYPES.CASE_RETURNED, "pending review", "in progress").catch(() => {});
+    if (instructorFeedback?.trim()) {
+        await logCaseAction(caseId, user.id, ACTION_TYPES.FEEDBACK_ADDED, null, instructorFeedback.trim()).catch(() => {});
+    }
     return data;
 }
 
@@ -135,5 +146,6 @@ export async function assignCase(templateId, studentId, patientSnapshot) {
         .select()
         .single();
     if (error) throw error;
+    await logCaseAction(data.id, user.id, ACTION_TYPES.CASE_ASSIGNED, null, studentId).catch(() => {});
     return data;
 }
