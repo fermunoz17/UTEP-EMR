@@ -1116,3 +1116,560 @@ button {
     width: 100%;
   }
 }
+
+
+/* ── Instructor Pages ───────────────────────────────────────────── */
+
+.instructor-main {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2.25rem 2rem 3rem;
+}
+
+.instructor-page-header {
+  margin-bottom: 2rem;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.instructor-page-header h2 {
+  margin: 0;
+
+  color: var(--text);
+  font-size: 2rem;
+  letter-spacing: -0.025em;
+}
+
+.instructor-page-header > div > p:last-child {
+  margin: 0.35rem 0 0;
+
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.instructor-section {
+  margin-bottom: 2.5rem;
+}
+
+.instructor-section-header {
+  margin-bottom: 1rem;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.instructor-section-header h3 {
+  margin: 0;
+
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.instructor-loading {
+  padding: 2rem;
+
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Table rows */
+
+.instructor-table-row td {
+  padding: 0.75rem 1rem;
+
+  border-bottom: 1px solid var(--border);
+
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.instructor-table-row:last-child td {
+  border-bottom: none;
+}
+
+.instructor-complaint-cell {
+  max-width: 260px;
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Row action buttons */
+
+.instructor-row-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.instructor-action-btn {
+  padding: 0.3rem 0.65rem;
+
+  border: 1px solid;
+  border-radius: 5px;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  transition: opacity 0.15s ease;
+}
+
+.instructor-action-btn:hover {
+  opacity: 0.8;
+}
+
+.instructor-action-edit {
+  border-color: var(--border-dark);
+
+  background: var(--surface);
+  color: var(--text-secondary);
+}
+
+.instructor-action-assign {
+  border-color: #bae6fd;
+
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.instructor-action-delete {
+  border-color: #fecaca;
+
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Status badge */
+
+.instructor-status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+
+  border-radius: 9999px;
+
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+/* Template / Case form */
+
+.instructor-form-panel {
+  max-width: 860px;
+  padding: 1.5rem;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.instructor-form-section {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.75rem;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.instructor-form-section:last-of-type {
+  margin-bottom: 0;
+  padding-bottom: 0;
+
+  border-bottom: none;
+}
+
+.instructor-form-section-title {
+  margin: 0 0 1rem;
+
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.instructor-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.instructor-form-wide {
+  grid-column: 1 / -1;
+}
+
+.instructor-select,
+.instructor-textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.65rem 0.75rem;
+
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+
+  background: white;
+  color: var(--text);
+}
+
+.instructor-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.instructor-select:focus,
+.instructor-textarea:focus {
+  border-color: var(--primary);
+  outline: 3px solid var(--primary-light);
+}
+
+/* Clinical baseline rows */
+
+.instructor-baseline-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.instructor-baseline-hint {
+  margin: 0.25rem 0 0;
+
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.instructor-baseline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.instructor-baseline-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.instructor-baseline-key {
+  flex: 0 0 180px;
+  padding: 0.55rem 0.7rem;
+
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+
+  background: white;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.instructor-baseline-value {
+  flex: 1;
+  padding: 0.55rem 0.7rem;
+
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+
+  background: white;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.instructor-baseline-remove {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+
+  border: 1px solid var(--border-dark);
+  border-radius: 5px;
+
+  background: var(--surface);
+  color: var(--text-muted);
+
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.instructor-baseline-remove:hover:not(:disabled) {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.instructor-baseline-remove:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Template summary (CaseAssign) */
+
+.instructor-template-summary {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+
+  background: var(--primary-light);
+
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+}
+
+.instructor-summary-row {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.instructor-summary-row:last-child {
+  margin-bottom: 0;
+}
+
+.instructor-summary-label {
+  flex-shrink: 0;
+  width: 120px;
+
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Student picker */
+
+.instructor-search-input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+
+  background: white;
+  color: var(--text);
+}
+
+.instructor-student-list {
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+
+  border: 1px solid var(--border);
+  border-radius: 7px;
+
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.instructor-student-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.instructor-student-item:last-child {
+  border-bottom: none;
+}
+
+.instructor-student-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  padding: 0.75rem 1rem;
+
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.instructor-student-label:hover {
+  background: var(--bg);
+}
+
+.instructor-student-name {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Patient picker modal */
+
+.instructor-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.instructor-picker-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.instructor-picker-row {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.instructor-picker-row:hover {
+  background: var(--bg);
+}
+
+.instructor-picker-name {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.instructor-picker-meta {
+  margin-top: 0.15rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+
+/* Responsive */
+
+@media (max-width: 700px) {
+  .instructor-main {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .instructor-page-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .instructor-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .instructor-form-wide {
+    grid-column: auto;
+  }
+
+  .instructor-baseline-key {
+    flex: 0 0 120px;
+  }
+}
+
+/* ── Case Modal (shared by StudentCases + InstructorCases) ─── */
+
+.case-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.case-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.case-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.case-modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.case-modal-section-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted, #64748b);
+}
+
+.case-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.case-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.case-info-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.case-complaint-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.case-complaint-box p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+.case-baseline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.5rem 1rem;
+}
+
+.case-baseline-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.case-notes-readonly {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  white-space: pre-wrap;
+  min-height: 5rem;
+}
+}
