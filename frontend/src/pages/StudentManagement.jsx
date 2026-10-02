@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createStudent } from "../services/students.js";
+import BulkStudentImport from "../components/BulkStudentImport.jsx";
 
 
 // keep initial form values in one place so the form can be reset
@@ -24,6 +25,8 @@ export default function StudentManagement({ onNavigate }) {
     // Store feedback that will be displayed to the user
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+
+
 
     // update the matching form properly whenever an input changes
     function handleChange(event) {
@@ -202,6 +205,7 @@ export default function StudentManagement({ onNavigate }) {
         </div>
       </form>
     </section>
+    <BulkStudentImport/>
   </main>
 );
 }
