@@ -300,6 +300,16 @@ export default function StudentCases({ onNavigate }) {
                                 </div>
                             )}
 
+                            {/* Instructor feedback — shown after a return for revision */}
+                            {activeCase.instructor_feedback && (
+                                <div className="case-modal-section">
+                                    <p className="case-modal-section-label">Instructor Feedback</p>
+                                    <div className="case-notes-readonly">
+                                        {activeCase.instructor_feedback}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Encounter notes */}
                             <div className="case-modal-section">
                                 <p className="case-modal-section-label">Encounter Notes</p>
