@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase.js";
 import MedicationSelector from "../components/MedicationSelector.jsx";
+import ClinicalNoteForm from "../components/clinical-notes/ClinicalNoteForm.jsx";
+import { createEmptyPTNote } from "../components/clinical-notes/PTDailySOAPNote.jsx";
 
 const VISIT_TYPES = ["Initial", "Follow-up", "Emergency", "Routine", "Specialist", "Other"];
 const APPT_TYPES  = ["Follow-up", "Initial Consultation", "Specialist Referral", "Routine Check-up", "Emergency", "Other"];
@@ -10,12 +12,19 @@ export default function StudentPatientDetail({ id, onNavigate }) {
     const [visits, setVisits] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Temporary until we get discipline from user profile
+    const studentDiscipline = "physical_therapy";
+
     // visit form
     const [showVisitForm, setShowVisitForm] = useState(false);
     const [visitForm, setVisitForm] = useState({ visit_type: "Follow-up", notes: "" });
     const [selectedMeds, setSelectedMeds] = useState([]); // [{ medicine, dosage, frequency }]
     const [visitSubmitting, setVisitSubmitting] = useState(false);
     const [visitError, setVisitError] = useState("");
+
+    const [clinicalNote, setClinicalNote] = useState(createEmptyPTNote());
+
+    const [noteStatus, setNoteStatus] = useState("draft");
 
     // appointment form
     const [showApptForm, setShowApptForm] = useState(false);
@@ -216,14 +225,45 @@ export default function StudentPatientDetail({ id, onNavigate }) {
                                 />
                             </div>
 
-                            <div style={fieldStyle}>
-                                <label>Notes</label>
-                                <textarea
-                                    value={visitForm.notes}
-                                    onChange={(e) => setVisitForm({ ...visitForm, notes: e.target.value })}
-                                    rows={4}
-                                    placeholder="Visit notes..."
+                            <div style={{ marginTop: "1.5rem" }}>
+                                <h3>Clinical Documentation</h3>
+
+                                <p>
+                                    Status:{" "}
+                                    <strong>
+                                        {noteStatus === "draft"
+                                            ? "Draft"
+                                            : "Ready for Review"}
+                                    </strong>
+                                </p>
+
+                                <ClinicalNoteForm
+                                    discipline={studentDiscipline}
+                                    value={clinicalNote}
+                                    onChange={setClinicalNote}
                                 />
+
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        gap: "0.75rem",
+                                        marginTop: "1rem",
+                                    }}
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() => setNoteStatus("draft")}
+                                    >
+                                        Save Draft
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setNoteStatus("ready_for_review")}
+                                    >
+                                        Submit for Review
+                                    </button>
+                                </div>
                             </div>
 
                             {visitError && <p role="alert" style={{ color: "red" }}>{visitError}</p>}
