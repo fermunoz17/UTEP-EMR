@@ -20,6 +20,7 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
     const isFromPatient = Boolean(patientId) && !isEditing;
 
     const [form, setForm] = useState(EMPTY_FORM);
+    const [expectationsRubric, setExpectationsRubric] = useState("");
     const [baseline, setBaseline] = useState([{ key: "", value: "" }]);
     const [loading, setLoading] = useState(isEditing || isFromPatient);
     const [submitting, setSubmitting] = useState(false);
@@ -44,6 +45,7 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                             ? entries.map(([key, value]) => ({ key, value }))
                             : [{ key: "", value: "" }]
                     );
+                    setExpectationsRubric(t.expectations_rubric ?? "");
                 } catch (err) {
                     console.error(err);
                     setError("Failed to load template.");
@@ -131,6 +133,7 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
             occupation: form.occupation.trim() || null,
             chief_complaint: form.chief_complaint.trim(),
             clinical_baseline,
+            expectations_rubric: expectationsRubric.trim() || null,
         };
 
         setSubmitting(true);
@@ -321,6 +324,26 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                                 </button>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* ── Expectations & Rubric ─────────────────────── */}
+                <div className="instructor-form-section">
+                    <h3 className="instructor-form-section-title">Grading Rubric & Clinical Expectations</h3>
+                    <p className="instructor-baseline-hint">
+                        What should the student document? Include any key milestones or traps you've built into the case.
+                    </p>
+                    <div className="student-form-field instructor-form-wide">
+                        <textarea
+                            id="expectations_rubric"
+                            name="expectations_rubric"
+                            rows={4}
+                            value={expectationsRubric}
+                            onChange={(e) => setExpectationsRubric(e.target.value)}
+                            disabled={submitting}
+                            className="instructor-textarea"
+                            placeholder="Paste required documentation elements, milestones, or deliberate clinical traps here..."
+                        />
                     </div>
                 </div>
 
