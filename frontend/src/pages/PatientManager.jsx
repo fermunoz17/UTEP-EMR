@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase.js";
+import PatientRegistrationForm from "../components/PatientRegistrationForm.jsx";
 
 export default function PatientManager({ onNavigate }) {
     const [patients, setPatients] = useState([]);
@@ -39,174 +40,79 @@ export default function PatientManager({ onNavigate }) {
         setLoading(false);
     }
 
-    function handleChange(e) {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    }
-
-    async function handleSubmit(e) {
-        e.preventDefault();
-        setFormError("");
-        setSubmitting(true);
-
-        const { error } = await supabase.from("patients").insert({
-            first_name: form.first_name.trim(),
-            last_name: form.last_name.trim(),
-            age: parseInt(form.age, 10),
-            sex: form.sex || null,
-        });
-
-        if (error) {
-            console.error("Failed to add patient:", error);
-            setFormError("Failed to add patient. Please try again.");
-        } else {
-            setForm({ first_name: "", last_name: "", age: "", sex: "" });
-            setShowModal(false);
-            await fetchPatients();
-        }
-
-        setSubmitting(false);
-    }
-
-    function handleCloseModal() {
-        setShowModal(false);
-        setForm({ first_name: "", last_name: "", age: "", sex: "" });
-        setFormError("");
-    }
-
-    return (
+        return (
         <main>
             <div className="scaffold-card">
                 <h1>Patient Manager</h1>
 
                 <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-                    <button onClick={() => setShowModal(true)}>
-                        + Add Patient
+                    <button onClick={() => setShowModal(!showModal)}>
+                        {showModal ? "← Back to Patient List" : "+ Add Patient"}
                     </button>
                     <button onClick={() => onNavigate("dashboard")}>
                         Back to Dashboard
                     </button>
                 </div>
 
-                <input
-                    type="text"
-                    placeholder="Search by ID, name, or age..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem", boxSizing: "border-box" }}
-                />
-
-                {loading ? (
-                    <p>Loading patients...</p>
-                ) : filtered.length === 0 ? (
-                    <p>No patients found.</p>
+                {showModal ? (
+                    <PatientRegistrationForm 
+                        onPatientCreated={() => { 
+                            fetchPatients(); 
+                            setShowModal(false); 
+                        }} 
+                    />
                 ) : (
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                            <tr>
-                                <th style={thStyle}>ID</th>
-                                <th style={thStyle}>First Name</th>
-                                <th style={thStyle}>Last Name</th>
-                                <th style={thStyle}>Age</th>
-                                <th style={thStyle}>Added</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map((p) => (
-                                <tr
-                                    key={p.id}
-                                    onClick={() => onNavigate("patientDetail", p.id)}
-                                    style={{ cursor: "pointer" }}
-                                    onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
-                                    onMouseLeave={e => e.currentTarget.style.background = ""}
-                                >
-                                    <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "0.75rem" }}>{p.id}</td>
-                                    <td style={tdStyle}>{p.first_name}</td>
-                                    <td style={tdStyle}>{p.last_name}</td>
-                                    <td style={tdStyle}>{p.age}</td>
-                                    <td style={tdStyle}>
-                                        {new Date(p.created_at).toLocaleDateString()}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <>
+                        <input
+                            type="text"
+                            placeholder="Search by ID, name, or age..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem", boxSizing: "border-box" }}
+                        />
+
+                        {loading ? (
+                            <p>Loading patients...</p>
+                        ) : filtered.length === 0 ? (
+                            <p>No patients found.</p>
+                        ) : (
+                            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                <thead>
+                                    <tr>
+                                        <th style={thStyle}>ID</th>
+                                        <th style={thStyle}>First Name</th>
+                                        <th style={thStyle}>Last Name</th>
+                                        <th style={thStyle}>Age</th>
+                                        <th style={thStyle}>Added</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered.map((p) => (
+                                        <tr
+                                            key={p.id}
+                                            onClick={() => onNavigate("patientDetail", p.id)}
+                                            style={{ cursor: "pointer" }}
+                                            onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
+                                            onMouseLeave={e => e.currentTarget.style.background = ""}
+                                        >
+                                            <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: "0.75rem" }}>{p.id.slice(0, 8)}...</td>
+                                            <td style={tdStyle}>{p.first_name}</td>
+                                            <td style={tdStyle}>{p.last_name}</td>
+                                            <td style={tdStyle}>{p.age}</td>
+                                            <td style={tdStyle}>
+                                                {new Date(p.created_at).toLocaleDateString()}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </>
                 )}
             </div>
-
-            {showModal && (
-                <div style={overlayStyle}>
-                    <div style={modalStyle}>
-                        <h2>Add Patient</h2>
-
-                        <form onSubmit={handleSubmit}>
-                            <div style={fieldStyle}>
-                                <label htmlFor="first_name">First Name</label>
-                                <input
-                                    id="first_name"
-                                    name="first_name"
-                                    type="text"
-                                    value={form.first_name}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-
-                            <div style={fieldStyle}>
-                                <label htmlFor="last_name">Last Name</label>
-                                <input
-                                    id="last_name"
-                                    name="last_name"
-                                    type="text"
-                                    value={form.last_name}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-
-                            <div style={fieldStyle}>
-                                <label htmlFor="age">Age</label>
-                                <input
-                                    id="age"
-                                    name="age"
-                                    type="number"
-                                    min="0"
-                                    max="150"
-                                    value={form.age}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-
-                            <div style={fieldStyle}>
-                                <label htmlFor="sex">Sex</label>
-                                <select
-                                    id="sex"
-                                    name="sex"
-                                    value={form.sex}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">— Select —</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-
-                            {formError && <p role="alert">{formError}</p>}
-
-                            <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-                                <button type="submit" disabled={submitting}>
-                                    {submitting ? "Adding..." : "Add Patient"}
-                                </button>
-                                <button type="button" onClick={handleCloseModal}>
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </main>
     );
+
 }
 
 const thStyle = {

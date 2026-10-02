@@ -10,6 +10,7 @@ export default function Dashboard({ user, onNavigate }) {
         "User";
 
     const isAdmin = profile.account_type === "admin";
+    const isInstructor = profile.account_type === "instructor";
     // Admins and instructors can create student accounts.
     const canManageStudents = ["admin", "instructor"].includes(
         profile.account_type,
@@ -91,7 +92,7 @@ export default function Dashboard({ user, onNavigate }) {
                     </div>
 
                     <div className="quick-access-grid">
-                        {isAdmin ? (
+                        {isAdmin || isInstructor? (
                             <button className="quick-access-card" type="button" onClick={() => onNavigate("patientManager")}>
                                 <span className="quick-icon" aria-hidden="true">🗂️</span>
                                 <span className="quick-content">
