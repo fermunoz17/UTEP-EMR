@@ -16,7 +16,8 @@ async function seed() {
   const users = [
     { email: 'admin@test.com', firstName: 'System', lastName: 'Admin', role: 'admin' },
     { email: 'instructor@test.com', firstName: 'Jane', lastName: 'Instructor', role: 'instructor' },
-    { email: 'student@test.com', firstName: 'John', lastName: 'Student', role: 'student' }
+    { email: 'student@test.com', firstName: 'John', lastName: 'Student', role: 'student' },
+    { email: 'pt.student@test.com', firstName: 'Sam', lastName: 'PT Student', role: 'student', clinicalRole: 'physical_therapy' }
   ];
 
   for (const u of users) {
@@ -68,6 +69,33 @@ async function seed() {
       console.error(`Error updating profile for ${u.email}:`, profileError.message);
     } else {
       console.log(`Profile updated for ${u.email}.`);
+    }
+
+    // 3. Assign clinical role when specified
+    if (u.clinicalRole) {
+      const { data: roleData, error: roleError } = await supabase
+        .from('roles')
+        .select('role_id')
+        .eq('role_name', u.clinicalRole)
+        .single();
+
+      if (roleError) {
+        console.error(`Error finding clinical role ${u.clinicalRole}:`, roleError.message);
+        continue;
+      }
+
+      const { error: assignmentError } = await supabase
+        .from('profile_roles')
+        .upsert(
+          { user_id: userId, role_id: roleData.role_id },
+          { onConflict: 'user_id,role_id' }
+        );
+
+      if (assignmentError) {
+        console.error(`Error assigning ${u.clinicalRole} to ${u.email}:`, assignmentError.message);
+      } else {
+        console.log(`Clinical role ${u.clinicalRole} assigned to ${u.email}.`);
+      }
     }
   }
 
