@@ -70,7 +70,6 @@ export default function StudentCases({ onNavigate }) {
         setRolesLoading(true);
         try {
             const roles = await getMyClinicalRoles();
-            console.log("Clinical roles:", roles);
             setClinicalRoles(roles);
         } catch (err) {
             console.error("Failed to load clinical roles:", err);
