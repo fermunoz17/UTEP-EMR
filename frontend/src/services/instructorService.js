@@ -77,6 +77,24 @@ export async function deleteTemplate(id) {
     if (error) throw error;
 }
 
+export async function getMyCourses() {
+    const { data, error } = await supabase
+        .from("courses")
+        .select("id, course_number, crn")
+        .order("course_number");
+    if (error) throw error;
+    return data;
+}
+
+export async function getCourseStudents(courseId) {
+    const { data, error } = await supabase
+        .from("course_enrollments")
+        .select("profiles!student_id ( user_id, first_name, last_name )")
+        .eq("course_id", courseId);
+    if (error) throw error;
+    return data.map((row) => row.profiles).filter(Boolean);
+}
+
 export async function getStudents() {
     const { data, error } = await supabase
         .from("profiles")
@@ -133,7 +151,7 @@ export async function returnCase(caseId, instructorFeedback) {
     return data;
 }
 
-export async function assignCase(templateId, studentId, patientSnapshot) {
+export async function assignCase(templateId, studentId, patientSnapshot, dueDate, assignmentNotes) {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
         .from("assigned_cases")
@@ -142,6 +160,8 @@ export async function assignCase(templateId, studentId, patientSnapshot) {
             student_id: studentId,
             assigned_by: user.id,
             patient_snapshot: patientSnapshot,
+            due_date: dueDate || null,
+            assignment_notes: assignmentNotes || null,
         })
         .select()
         .single();

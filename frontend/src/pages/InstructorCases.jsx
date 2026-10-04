@@ -286,6 +286,7 @@ export default function InstructorCases({ onNavigate }) {
                                         <th>Chief Complaint</th>
                                         <th>Student</th>
                                         <th>Status</th>
+                                        <th>Due Date</th>
                                         <th>Assigned</th>
                                         <th>Action</th>
                                     </tr>
@@ -311,6 +312,7 @@ export default function InstructorCases({ onNavigate }) {
                                                         {c.encounter_status}
                                                     </span>
                                                 </td>
+                                                <td>{c.due_date ? new Date(c.due_date).toLocaleDateString() : "—"}</td>
                                                 <td>{new Date(c.assigned_at).toLocaleDateString()}</td>
                                                 <td>
                                                     <div className="instructor-row-actions">
