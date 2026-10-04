@@ -82,7 +82,7 @@ async function seed() {
         age: 45,
         sex: 'Male',
         occupation: 'Software Engineer',
-        medications: 'Lisinopril 10mg daily',
+        current_medications: [{ medicine: { name: "Lisinopril", unit: "mg" }, dosage: 10, frequency: 1 }],
         last_visit: '2026-09-01',
         last_visit_notes: 'Patient complained of mild headaches.'
       }

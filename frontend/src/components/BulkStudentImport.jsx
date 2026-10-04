@@ -1,19 +1,21 @@
 import { useState } from "react";
-import { createStudent } from "../services/students";
+import { createStudent, enrollStudent } from "../services/students";
 
 export default function BulkStudentImport() {
+    const [courseNumber, setCourseNumber] = useState('');
+    const [crn, setCrn] = useState('');
     const [bulkData, setBulkData] = useState('');
     const [bulkSubmitting, setBulkSubmitting] = useState(false);
     const [bulkResults, setBulkResults] = useState(null);
-    
+
     async function handleBulkSubmit(event) {
         event.preventDefault();
 
-        if (bulkData.trim().length == 0) return;
+        if (bulkData.trim().length === 0) return;
 
         setBulkSubmitting(true);
         setBulkResults(null);
-        
+
         const lines = bulkData.trim().split('\n');
 
         let successCount = 0;
@@ -37,40 +39,38 @@ export default function BulkStudentImport() {
                 let nameParts = fullName.split(' ');
                 let firstName = nameParts[0].trim();
                 let lastName = nameParts.slice(1).join(' ') || "Unknown";
-                // auto create password
                 let createdPassword = firstName.charAt(0).toUpperCase() + lastName.replace(/\s+/g, '') + "!2026";
                 let studentData = {
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: email,
-                    password: createdPassword
-                }
-            
+                    firstName,
+                    lastName,
+                    email,
+                    password: createdPassword,
+                };
 
                 try {
-                    await createStudent(studentData);
-                    successCount++; 
+                    const student = await createStudent(studentData);
+                    await enrollStudent(student.id, courseNumber.trim(), crn.trim());
+                    successCount++;
                 } catch (err) {
                     importErrors.push("Row " + rowNumber + " (" + studentData.email + "): " + err.message);
-                }  
+                }
             } else {
-                // Not enough data in line
                 importErrors.push("Row " + rowNumber + ": Missing information. Expected 2 columns.");
             }
         }
 
         setBulkResults({
-            successCount: successCount,
-            errors: importErrors
+            successCount,
+            errors: importErrors,
         });
 
         setBulkSubmitting(false);
 
-        if (importErrors.length === 0 && successCount > 0){
+        if (importErrors.length === 0 && successCount > 0) {
             setBulkData("");
         }
     }
-    
+
     return (
         <section className="student-form-panel" aria-labelledby="bulk-import-heading" style={{ marginTop: "2rem" }}>
             <div className="student-form-heading">
@@ -81,7 +81,7 @@ export default function BulkStudentImport() {
                 <div style={{ marginBottom: "1.5rem" }}>
                     {bulkResults.successCount > 0 && (
                         <p className="form-message form-message-success" role="status">
-                            Successfully imported {bulkResults.successCount} student(s).
+                            Successfully imported {bulkResults.successCount} student(s) into {courseNumber} (CRN {crn}).
                         </p>
                     )}
                     {bulkResults.errors.length > 0 && (
@@ -97,6 +97,30 @@ export default function BulkStudentImport() {
                 </div>
             )}
             <form className="student-form" onSubmit={handleBulkSubmit}>
+                <div className="student-form-field">
+                    <label htmlFor="course-number">Course Number</label>
+                    <input
+                        id="course-number"
+                        type="text"
+                        value={courseNumber}
+                        onChange={(e) => setCourseNumber(e.target.value)}
+                        disabled={bulkSubmitting}
+                        placeholder="e.g. PHARM 4301"
+                        required
+                    />
+                </div>
+                <div className="student-form-field">
+                    <label htmlFor="crn">CRN</label>
+                    <input
+                        id="crn"
+                        type="text"
+                        value={crn}
+                        onChange={(e) => setCrn(e.target.value)}
+                        disabled={bulkSubmitting}
+                        placeholder="e.g. 12345"
+                        required
+                    />
+                </div>
                 <div className="student-form-field" style={{ gridColumn: "1 / -1" }}>
                     <label htmlFor="bulk-data">CSV Data</label>
                     <textarea
@@ -119,4 +143,3 @@ export default function BulkStudentImport() {
         </section>
     );
 }
-

@@ -207,9 +207,9 @@ export default function InstructorCases({ onNavigate }) {
                             <table className="patient-table">
                                 <thead>
                                     <tr>
-                                        <th>Patient Name</th>
-                                        <th>Age</th>
-                                        <th>Sex</th>
+                                        <th>Title</th>
+                                        <th>Patient</th>
+                                        <th>Year / Discipline</th>
                                         <th>Chief Complaint</th>
                                         <th>Created</th>
                                         <th>Actions</th>
@@ -218,9 +218,9 @@ export default function InstructorCases({ onNavigate }) {
                                 <tbody>
                                     {templates.map((t) => (
                                         <tr key={t.id} className="instructor-table-row">
-                                            <td>{t.first_name} {t.last_name}</td>
-                                            <td>{t.age}</td>
-                                            <td>{t.sex || "—"}</td>
+                                            <td>{t.title || "—"}</td>
+                                            <td>{t.first_name} {t.last_name}, {t.age}{t.sex ? ` · ${t.sex}` : ""}</td>
+                                            <td>{[t.target_year, t.discipline].filter(Boolean).join(" · ") || "—"}</td>
                                             <td className="instructor-complaint-cell">{t.chief_complaint}</td>
                                             <td>{new Date(t.created_at).toLocaleDateString()}</td>
                                             <td>

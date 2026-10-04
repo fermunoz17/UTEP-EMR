@@ -38,3 +38,26 @@ export async function createStudent(student) {
 
     return data.student;
 }
+
+export async function enrollStudent(studentId, courseNumber, crn) {
+    const { data, error } = await supabase.functions.invoke("enroll-in-course", {
+        body: { studentId, courseNumber, crn },
+    });
+
+    if (error) {
+        let message = error.message;
+
+        if (error.context instanceof Response) {
+            try {
+                const details = await error.context.json();
+                message = details.error ?? message;
+            } catch {
+                // Keep the original error message.
+            }
+        }
+
+        throw new Error(message);
+    }
+
+    return data;
+}
