@@ -5,7 +5,9 @@ import {
     saveCaseNotes,
     submitCase,
 } from "../services/studentCaseService.js";
+import { getMyClinicalRoles } from "../services/clinicalRoleService.js";
 import TagSelector from "../components/TagSelector.jsx";
+import PTSoapNote from "../components/PTSoapNote.jsx";
 
 const STATUS_STYLES = {
     "not started":    { background: "#f1f5f9", color: "#64748b" },
@@ -16,19 +18,40 @@ const STATUS_STYLES = {
 
 const EDITABLE_STATUSES = ["not started", "in progress"];
 
+const EMPTY_PT_SOAP = {
+    subjective: "",
+    objective: "",
+    assessment: { icd10_code: "", clinical_rationale: "" },
+    plan: "",
+};
+
 export default function StudentCases({ onNavigate }) {
     const [cases, setCases] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    // Clinical roles for the logged-in student
+    const [clinicalRoles, setClinicalRoles] = useState([]);
+    const [rolesLoading, setRolesLoading] = useState(true);
+
     // Modal state
     const [activeCase, setActiveCase] = useState(null);
+
+    // Generic encounter notes for students whose discipline-specific
+    // documentation has not been implemented yet.
     const [notes, setNotes] = useState("");
+
+    // PT-specific SOAP documentation note
+    const [ptSoap, setPtSoap] = useState(EMPTY_PT_SOAP);
+
     const [submitting, setSubmitting] = useState(false);
     const [modalError, setModalError] = useState("");
 
+    const isPTStudent = clinicalRoles.includes("physical_therapy");
+
     useEffect(() => {
         fetchCases();
+        fetchClinicalRoles();
     }, []);
 
     async function fetchCases() {
@@ -42,28 +65,70 @@ export default function StudentCases({ onNavigate }) {
         }
         setLoading(false);
     }
+    
+    async function fetchClinicalRoles() {
+        setRolesLoading(true);
+        try {
+            const roles = await getMyClinicalRoles();
+            setClinicalRoles(roles);
+        } catch (err) {
+            console.error("Failed to load clinical roles:", err);
+            setClinicalRoles([]);
+        }
+
+        setRolesLoading(false);
+    }
+
+    function loadPTSoap(encounterNotes) {
+        if (!encounterNotes) {
+            return EMPTY_PT_SOAP;
+        }
+
+        try {
+            const parsed = JSON.parse(encounterNotes);
+
+            return {
+                ...EMPTY_PT_SOAP,
+                ...parsed,
+
+                assessment: {
+                    ...EMPTY_PT_SOAP.assessment,
+                    ...(parsed?.assessment ?? {}),
+                },
+            };
+        } catch {
+            return EMPTY_PT_SOAP;
+        }
+    }
+
 
     async function openCase(c) {
+        let openedCase = c;
+
         // Auto-start if not yet started
         if (c.encounter_status === "not started") {
             try {
                 const updated = await startCase(c.id);
                 setCases((prev) => prev.map((x) => x.id === c.id ? updated : x));
-                setActiveCase(updated);
+                openedCase = updated;
             } catch (err) {
                 console.error(err);
-                setActiveCase(c);
             }
-        } else {
-            setActiveCase(c);
         }
-        setNotes(c.encounter_notes ?? "");
+        setActiveCase(openedCase);
+
+        if (isPTStudent) {
+            setPtSoap(loadPTSoap(openedCase.encounter_notes));
+        } else {
+            setNotes(openedCase.encounter_notes ?? "");
+        }
         setModalError("");
     }
 
     function closeModal() {
         setActiveCase(null);
         setNotes("");
+        setPtSoap(EMPTY_PT_SOAP);
         setModalError("");
     }
 
@@ -71,30 +136,58 @@ export default function StudentCases({ onNavigate }) {
         setModalError("");
         setSubmitting(true);
         try {
-            const updated = await saveCaseNotes(activeCase.id, notes);
+            const encounterNotes = isPTStudent
+                ? JSON.stringify(ptSoap)
+                : notes;
+
+            const updated = await saveCaseNotes(activeCase.id, encounterNotes);
+
             setCases((prev) => prev.map((x) => x.id === activeCase.id ? updated : x));
             setActiveCase(updated);
         } catch (err) {
             console.error(err);
-            setModalError("Failed to save notes. Please try again.");
+            setModalError(
+                isPTStudent
+                    ? "Failed to save PT SOAP note. Please try again."
+                    : "Failed to save notes. Please try again."
+            );
         }
         setSubmitting(false);
     }
 
     async function handleSubmit() {
-        if (!notes.trim()) {
+        if (isPTStudent) {
+            const hasRequiredSOAP =
+                ptSoap.subjective.trim() &&
+                ptSoap.objective.trim() &&
+                ptSoap.assessment.icd10_code.trim() &&
+                ptSoap.assessment.clinical_rationale.trim() &&
+                ptSoap.plan.trim();
+
+            if (!hasRequiredSOAP) {
+                setModalError("Please complete all PT SOAP sections before submitting for signature.");
+                return;
+            }
+        } else if (!notes.trim()) {
             setModalError("Please add encounter notes before submitting.");
             return;
         }
         setModalError("");
         setSubmitting(true);
         try {
-            const updated = await submitCase(activeCase.id, notes);
+            const encounterNotes = isPTStudent ? JSON.stringify(ptSoap) : notes;
+            const updated = await submitCase(activeCase.id, encounterNotes);
             setCases((prev) => prev.map((x) => x.id === activeCase.id ? updated : x));
+
             closeModal();
         } catch (err) {
             console.error(err);
-            setModalError("Failed to submit case. Please try again.");
+
+            setModalError(
+                isPTStudent
+                    ? "Failed to submit PT SOAP note. Please try again."
+                    : "Failed to submit case. Please try again."
+            );
         }
         setSubmitting(false);
     }
@@ -116,7 +209,7 @@ export default function StudentCases({ onNavigate }) {
             )}
 
             <div className="patient-results">
-                {loading ? (
+                {loading || rolesLoading ? (
                     <p className="instructor-loading">Loading your cases…</p>
                 ) : cases.length === 0 ? (
                     <div className="patients-empty-state">
@@ -311,24 +404,28 @@ export default function StudentCases({ onNavigate }) {
                             )}
 
                             {/* Encounter notes */}
-                            <div className="case-modal-section">
-                                <p className="case-modal-section-label">Encounter Notes</p>
-                                {isEditable ? (
-                                    <textarea
-                                        className="instructor-textarea"
-                                        rows={6}
-                                        placeholder="Document your clinical reasoning, findings, assessment, and plan…"
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        disabled={submitting}
-                                        style={{ width: "100%" }}
-                                    />
-                                ) : (
-                                    <div className="case-notes-readonly">
-                                        {activeCase.encounter_notes || <em style={{ color: "var(--text-muted)" }}>No notes recorded.</em>}
-                                    </div>
-                                )}
-                            </div>
+                            {isPTStudent ? (
+                                <div className="case-modal-section"><PTSoapNote value={ptSoap} onChange={setPtSoap} disabled={submitting} readOnly={!isEditable}/></div>
+                            ) : (
+                                <div className="case-modal-section">
+                                    <p className="case-modal-section-label">Encounter Notes</p>
+                                    {isEditable ? (
+                                        <textarea
+                                            className="instructor-textarea"
+                                            rows={6}
+                                            placeholder="Document your clinical reasoning, findings, assessment, and plan…"
+                                            value={notes}
+                                            onChange={(e) => setNotes(e.target.value)}
+                                            disabled={submitting}
+                                            style={{ width: "100%" }}
+                                        />
+                                    ) : (
+                                        <div className="case-notes-readonly">
+                                            {activeCase.encounter_notes || <em style={{ color: "var(--text-muted)" }}>No notes recorded.</em>}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {modalError && (
                                 <p className="form-message form-message-error" role="alert">{modalError}</p>
@@ -352,7 +449,7 @@ export default function StudentCases({ onNavigate }) {
                                     onClick={handleSubmit}
                                     disabled={submitting}
                                 >
-                                    {submitting ? "Submitting…" : "Submit for Review"}
+                                    {submitting ? "Submitting…" : isPTStudent ? "Submit for Signature" : "Submit for Review"}
                                 </button>
                             </div>
                         )}
@@ -394,7 +491,7 @@ const modalStyle = {
     borderRadius: "10px",
     boxShadow: "0 20px 60px rgba(15,23,42,0.18)",
     width: "100%",
-    maxWidth: "640px",
+    maxWidth: "900px",
     maxHeight: "88vh",
     display: "flex",
     flexDirection: "column",

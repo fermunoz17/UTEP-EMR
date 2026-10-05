@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMyTemplates, getMyAssignedCases, deleteTemplate, searchPatients, signOffCase, returnCase } from "../services/instructorService.js";
 import { getCaseAuditLogs } from "../services/auditService.js";
+import PTSoapNote from "../components/PTSoapNote.jsx";
 
 const STATUS_STYLES = {
     "not started":    { background: "#f1f5f9", color: "#64748b" },
@@ -150,6 +151,20 @@ export default function InstructorCases({ onNavigate }) {
             setReviewError("Failed to return case. Please try again.");
         }
         setReviewSubmitting(false);
+    }
+
+    function parseEncounterNotes(notes) {
+        if (!notes) return null;
+
+        if (typeof notes === "object") {
+            return notes;
+        }
+
+        try {
+            return JSON.parse(notes);
+        } catch {
+            return null;
+        }
     }
 
     return (
@@ -418,7 +433,20 @@ export default function InstructorCases({ onNavigate }) {
                             <div className="case-modal-section">
                                 <p className="case-modal-section-label">Student Encounter Notes</p>
                                 <div className="case-notes-readonly">
-                                    {reviewCase.encounter_notes || <em style={{ color: "var(--text-muted)" }}>No notes recorded.</em>}
+                                    {(() => {
+                                        const parsed = parseEncounterNotes(reviewCase.encounter_notes);
+                                        
+                                        if (parsed) {
+                                            return (<PTSoapNote value={parsed
+                                            } readOnly={true}/>);
+                                        }
+                                        
+                                        return reviewCase.encounter_notes || (
+                                            <em style={{ color: "var(--text-muted)" }}>
+                                                No notes recorded.
+                                            </em>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 
