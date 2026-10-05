@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { createStudent } from "../services/students";
 
-export default function BulkStudentImport() {
+
+
+
+
+
+export default function BulkStudentImport({ onImported }) {
     const [bulkData, setBulkData] = useState('');
     const [bulkSubmitting, setBulkSubmitting] = useState(false);
     const [bulkResults, setBulkResults] = useState(null);
@@ -19,7 +24,10 @@ export default function BulkStudentImport() {
         let successCount = 0;
         let importErrors = [];
 
+        let createdAccounts = [];
+
         for (let i = 0; i < lines.length; i++) {
+
             let line = lines[i].trim();
             let rowNumber = i + 1;
             if (line.length === 0) continue;
@@ -37,8 +45,9 @@ export default function BulkStudentImport() {
                 let nameParts = fullName.split(' ');
                 let firstName = nameParts[0].trim();
                 let lastName = nameParts.slice(1).join(' ') || "Unknown";
-                // auto create password
-                let createdPassword = firstName.charAt(0).toUpperCase() + lastName.replace(/\s+/g, '') + "!2026";
+
+                // give each account a different random temporary password.
+                let createdPassword = crypto.randomUUID().replaceAll('-', '') + "Aa1!";
                 let studentData = {
                     firstName: firstName,
                     lastName: lastName,
@@ -50,6 +59,7 @@ export default function BulkStudentImport() {
                 try {
                     await createStudent(studentData);
                     successCount++; 
+                    createdAccounts.push({ email, password: createdPassword });
                 } catch (err) {
                     importErrors.push("Row " + rowNumber + " (" + studentData.email + "): " + err.message);
                 }  
@@ -61,10 +71,13 @@ export default function BulkStudentImport() {
 
         setBulkResults({
             successCount: successCount,
-            errors: importErrors
+            errors: importErrors,
+            accounts: createdAccounts
         });
 
         setBulkSubmitting(false);
+
+        if (successCount > 0) onImported?.();
 
         if (importErrors.length === 0 && successCount > 0){
             setBulkData("");
@@ -80,9 +93,14 @@ export default function BulkStudentImport() {
             {bulkResults && (
                 <div style={{ marginBottom: "1.5rem" }}>
                     {bulkResults.successCount > 0 && (
-                        <p className="form-message form-message-success" role="status">
-                            Successfully imported {bulkResults.successCount} student(s).
-                        </p>
+                        <div className="form-message form-message-success" role="status">
+                            <p>Successfully imported {bulkResults.successCount} student(s). Copy these temporary passwords now; they disappear when you leave this page.</p>
+                            <ul className="student-import-credentials">
+                                {bulkResults.accounts.map((account) => (
+                                    <li key={account.email}><span>{account.email}</span><code>{account.password}</code></li>
+                                ))}
+                            </ul>
+                        </div>
                     )}
                     {bulkResults.errors.length > 0 && (
                         <div className="form-message form-message-error" role="alert" style={{ whiteSpace: "pre-wrap", textAlign: "left" }}>

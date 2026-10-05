@@ -43,20 +43,20 @@ UTEP-EMR/
 
 ## Quickstart
 
-### 1. Database (Supabase)
-Requires Docker Desktop and Node.js.
+Install Node.js (18 or newer) and Docker Desktop, then start Docker. From the repository root, run:
+
 ```bash
-# Start local Supabase services
-npx supabase start
-
-# Apply migrations & reset DB if needed
-npx supabase db reset
-
-# Stop services when done
-npx supabase stop
+npm run dev
 ```
 
-### 2. Backend (FastAPI)
+This starts local Supabase, applies pending migrations without resetting your data, serves both Edge Functions, installs frontend packages if needed, and starts Vite. Open the Local URL printed by Vite (usually `http://localhost:5173/`). On a fresh local database, the command creates one admin account and prints its random password once. Keep those credentials private. Each teammate has their own local database and users; cloning the repo does not copy anyone else's accounts.
+
+Press Ctrl+C to stop Vite and any Edge Functions started by this command. Supabase's Docker services stay running for the next session. To stop them later, run `npx supabase@2.113.0 stop` from the repository root. Docker images and the Supabase CLI may need to download on the first run.
+
+### Optional FastAPI backend
+
+The current React app talks directly to Supabase; FastAPI is not needed to try student management. To run the separate backend:
+
 ```powershell
 cd backend
 python -m venv .venv
@@ -66,13 +66,6 @@ uvicorn app.main:app --reload --port 8000
 ```
 Interactive API docs will be at `http://127.0.0.1:8000/docs`.
 
-### 3. Frontend (React)
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
 ---
 
 ## Branching Strategy
@@ -80,6 +73,6 @@ npm run dev
 - **`main`**: Production / release branch.
 - **`develop`**: Primary integration branch for active development.
 - **`feature/<name>`**: Feature branches cut from `develop` and merged via Pull Request.
-## Seeding Test Data
-We have included a seed script to easily populate your local database with test users and sample patient data. 
-See the **[Seeding Guide](frontend/SEEDING.md)** for instructions on how to run it and add your own test data.
+## Local Test Data
+
+`npm run dev` creates an admin on a fresh local database, but does not add patients or reset existing records. The older `frontend/seed.cjs` script is not part of this setup and may not match the current database schema.

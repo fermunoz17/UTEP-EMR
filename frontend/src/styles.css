@@ -1058,7 +1058,7 @@ button {
   cursor: not-allowed;
 }
 
-/* Keep the submit command aligned with the right side of the form. */
+/* thie one keeps the submit command aligned with the right side of the form. */
 .student-form-actions {
   margin-top: 1.25rem;
 
@@ -1066,7 +1066,7 @@ button {
   justify-content: flex-end;
 }
 
-/* Shared layout for success and error feedback. */
+/* shared layout for success and error feedback */
 .form-message {
   margin: 0 0 1rem;
   padding: 0.75rem 0.85rem;
@@ -1091,7 +1091,213 @@ button {
   color: var(--success-text);
 }
 
-/* Stack the page header and form fields on smaller screens. */
+.student-directory {
+  margin: 0 0 2rem;
+}
+
+.student-directory-toolbar,
+.student-directory-pages,
+.student-directory-pages > div,
+.student-row-actions,
+.student-edit-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.student-directory-toolbar {
+  margin-bottom: 0.75rem;
+}
+
+.student-directory-toolbar h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.student-directory-scroll {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.student-directory-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.82rem;
+}
+
+.student-directory-table th,
+.student-directory-table td {
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border);
+}
+
+.student-directory-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.student-directory-table th {
+  background: #f1f5f9;
+  color: var(--text-secondary);
+  font-weight: 650;
+}
+
+.student-directory-table th:nth-child(1) { width: 23%; }
+.student-directory-table th:nth-child(2) { width: 31%; }
+.student-directory-table th:nth-child(3) { width: 12%; }
+.student-directory-table th:nth-child(4) { width: 34%; }
+
+.student-name-cell,
+.student-email-cell {
+  overflow-wrap: anywhere;
+}
+
+.student-status {
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.student-status.is-active { color: var(--success-text); }
+.student-status.is-inactive { color: var(--text-muted); }
+
+.student-row-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.student-small-button {
+  min-height: 34px;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.student-small-button:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary-hover);
+}
+
+.student-small-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.student-danger-button {
+  color: #b91c1c;
+}
+
+.student-confirm-label {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.student-row-error {
+  margin: 0.4rem 0 0;
+  color: #b91c1c;
+  font-size: 0.78rem;
+}
+
+.student-edit-row td {
+  background: #f8fafc;
+}
+
+.student-edit-heading {
+  justify-content: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.student-text-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-hover);
+  font-size: 0.78rem;
+}
+
+.student-edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.student-email-form {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.student-edit-form label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.student-edit-form input {
+  width: 100%;
+  min-height: 34px;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.student-edit-form input:focus-visible,
+.student-small-button:focus-visible,
+.student-text-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.student-directory-pages {
+  margin-top: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.student-directory-feedback {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.student-import-credentials {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.student-import-credentials li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid #a7f3d0;
+}
+
+.student-import-credentials code {
+  overflow-wrap: anywhere;
+}
+
+/* stack the page header and form fields on smaller screens */
 @media (max-width: 700px) {
   .student-management-main {
     padding: 1.5rem 1rem 2rem;
@@ -1115,10 +1321,14 @@ button {
   .student-form-actions .primary-action-button {
     width: 100%;
   }
+
+  .student-edit-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 
-/* ── Instructor Pages ───────────────────────────────────────────── */
+/* =======Instructor Pages============= */
 
 .instructor-main {
   width: 100%;
@@ -1446,7 +1656,7 @@ button {
   text-transform: uppercase;
 }
 
-/* Student picker */
+/* student picker */
 
 .instructor-search-input {
   width: 100%;
@@ -1569,7 +1779,7 @@ button {
   }
 }
 
-/* ── Case Modal (shared by StudentCases + InstructorCases) ─── */
+/*  Case Modal shared by StudentCases and InstructorCases */
 
 .case-modal-header {
   display: flex;
@@ -1672,7 +1882,6 @@ button {
   white-space: pre-wrap;
   min-height: 5rem;
 }
-
 .instructor-feedback-textarea {
   width: 100%;
   box-sizing: border-box;
