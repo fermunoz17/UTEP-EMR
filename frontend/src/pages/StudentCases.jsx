@@ -10,20 +10,23 @@ import TagSelector from "../components/TagSelector.jsx";
 import PTSoapNote from "../components/PTSoapNote.jsx";
 
 const STATUS_STYLES = {
-    "not started":    { background: "#ede9fe", color: "#6d28d9" },
-    "in progress":    { background: "#e0f2fe", color: "#0284c7" },
-    "pending review": { background: "#fef3c7", color: "#b45309" },
-    "completed":      { background: "#ecfdf5", color: "#047857" },
+    "not started":        { background: "#ede9fe", color: "#6d28d9" },
+    "in progress":        { background: "#e0f2fe", color: "#0284c7" },
+    "revision_requested": { background: "#fff7ed", color: "#c2410c" },
+    "pending review":     { background: "#fef3c7", color: "#b45309" },
+    "completed":          { background: "#ecfdf5", color: "#047857" },
 };
 
 const STATUS_LABELS = {
-    "not started":    "Assigned",
-    "in progress":    "In Progress",
-    "pending review": "Submitted",
-    "completed":      "Completed",
+    "not started":        "Assigned",
+    "in progress":        "In Progress",
+    "revision_requested": "Revision Requested",
+    "pending review":     "Submitted",
+    "completed":          "Completed",
 };
 
-const EDITABLE_STATUSES = ["not started", "in progress"];
+const EDITABLE_STATUSES = ["not started", "in progress", "revision_requested"];
+
 
 const EMPTY_PT_SOAP = {
     subjective: "",
@@ -243,8 +246,11 @@ export default function StudentCases({ onNavigate }) {
                                     const statusStyle = STATUS_STYLES[c.encounter_status] ?? STATUS_STYLES["not started"];
                                     const actionLabel =
                                         c.encounter_status === "not started" ? "Open Case"
+                                        : c.encounter_status === "revision_requested" ? "Revise"
                                         : c.encounter_status === "in progress" ? "Continue"
                                         : "View";
+
+
                                     return (
                                         <tr key={c.id} className="instructor-table-row">
                                             <td>
@@ -258,6 +264,7 @@ export default function StudentCases({ onNavigate }) {
                                                     {STATUS_LABELS[c.encounter_status] ?? c.encounter_status}
                                                 </span>
                                             </td>
+
                                             <td>{new Date(c.assigned_at).toLocaleDateString()}</td>
                                             <td>
                                                 <button
@@ -293,8 +300,9 @@ export default function StudentCases({ onNavigate }) {
                             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                                 <span className="instructor-status-badge"
                                     style={STATUS_STYLES[activeCase.encounter_status] ?? STATUS_STYLES["not started"]}>
-                                    {activeCase.encounter_status}
+                                    {STATUS_LABELS[activeCase.encounter_status] ?? activeCase.encounter_status}
                                 </span>
+
                                 <button className="instructor-baseline-remove" type="button"
                                     onClick={closeModal} aria-label="Close"
                                     style={{ width: 32, height: 32, fontSize: "1.2rem" }}>×</button>
@@ -410,7 +418,7 @@ export default function StudentCases({ onNavigate }) {
                                 </div>
                             )}
 
-                            {/* Grading Rubric */}
+                            {/* Expectations & Rubric */}
                             {activeCase.patient_snapshot?.expectations_rubric && (
                                 <div className="case-modal-section">
                                     <p className="case-modal-section-label">Expectations & Rubric</p>
@@ -420,8 +428,42 @@ export default function StudentCases({ onNavigate }) {
                                 </div>
                             )}
 
-                            {/* Instructor feedback — shown after a return for revision */}
-                            {activeCase.instructor_feedback && (
+                            {/* Instructor feedback and rubric scores — shown after revision_requested */}
+                            {activeCase.encounter_status === "revision_requested" && (
+                                <div className="case-modal-section" style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "8px", padding: "1rem" }}>
+                                    <p className="case-modal-section-label" style={{ color: "#c2410c" }}>Revision Requested by Instructor</p>
+                                    {activeCase.instructor_feedback && (
+                                        <div style={{ marginBottom: "0.75rem" }}>
+                                            <span className="case-info-label">Feedback</span>
+                                            <div className="case-notes-readonly" style={{ marginTop: "0.25rem" }}>
+                                                {activeCase.instructor_feedback}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {activeCase.chart_annotations?.length > 0 && (
+                                        <div style={{ marginBottom: "0.75rem" }}>
+                                            <span className="case-info-label">Chart Annotations</span>
+                                            {activeCase.chart_annotations.map((a, i) => (
+                                                <div key={i} style={{ background: "#ffffff", border: "1px solid #fed7aa", borderRadius: "6px", padding: "0.5rem 0.75rem", marginTop: "0.4rem", fontSize: "0.875rem" }}>
+                                                    <strong style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#c2410c" }}>{a.section}: </strong>
+                                                    {a.comment}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {activeCase.score != null && (
+                                        <div>
+                                            <span className="case-info-label">Current Score</span>
+                                            <p style={{ margin: "0.2rem 0 0", fontWeight: 600 }}>
+                                                {activeCase.score} / {activeCase.max_score ?? 100} pts
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Feedback field for completed cases */}
+                            {activeCase.encounter_status === "completed" && activeCase.instructor_feedback && (
                                 <div className="case-modal-section">
                                     <p className="case-modal-section-label">Instructor Feedback</p>
                                     <div className="case-notes-readonly">
@@ -429,6 +471,7 @@ export default function StudentCases({ onNavigate }) {
                                     </div>
                                 </div>
                             )}
+
 
                             {/* Encounter notes */}
                             {isPTStudent ? (
@@ -476,7 +519,11 @@ export default function StudentCases({ onNavigate }) {
                                     onClick={handleSubmit}
                                     disabled={submitting}
                                 >
-                                    {submitting ? "Submitting…" : isPTStudent ? "Submit for Signature" : "Submit for Review"}
+                                    {submitting
+                                        ? "Submitting…"
+                                        : activeCase.encounter_status === "revision_requested"
+                                        ? "Resubmit for Review"
+                                        : isPTStudent ? "Submit for Signature" : "Submit for Review"}
                                 </button>
                             </div>
                         )}
@@ -490,12 +537,18 @@ export default function StudentCases({ onNavigate }) {
                         )}
 
                         {activeCase.encounter_status === "completed" && (
-                            <div className="case-modal-footer">
+                            <div className="case-modal-footer" style={{ flexDirection: "column", alignItems: "flex-start", gap: "0.4rem" }}>
                                 <p style={{ margin: 0, color: "var(--success-text)", fontSize: "0.85rem", fontWeight: 600 }}>
                                     This case has been signed off by your instructor.
                                 </p>
+                                {activeCase.score != null && (
+                                    <p style={{ margin: 0, fontSize: "0.9rem" }}>
+                                        Final score: <strong>{activeCase.score} / {activeCase.max_score ?? 100} pts</strong>
+                                    </p>
+                                )}
                             </div>
                         )}
+
                     </div>
                 </div>
             )}

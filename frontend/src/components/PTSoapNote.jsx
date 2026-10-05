@@ -7,10 +7,6 @@ export default function PTSoapNote({
     const soap = {
         subjective: "",
         objective: "",
-        assessment: {
-            icd10_code: "",
-            clinical_rationale: "",
-        },
         plan: "",
         ...value,
         assessment: {

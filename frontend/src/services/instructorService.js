@@ -111,7 +111,7 @@ export async function getMyAssignedCases() {
         .from("assigned_cases")
         .select(`
             *,
-            patient_templates ( first_name, last_name, chief_complaint ),
+            patient_templates ( first_name, last_name, chief_complaint, traps, rubric_criteria ),
             profiles!student_id ( first_name, last_name )
         `)
         .order("assigned_at", { ascending: false });
@@ -139,19 +139,48 @@ export async function returnCase(caseId, instructorFeedback) {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
         .from("assigned_cases")
-        .update({ encounter_status: "in progress", instructor_feedback: instructorFeedback, updated_at: new Date().toISOString() })
+        .update({ encounter_status: "revision_requested", instructor_feedback: instructorFeedback, updated_at: new Date().toISOString() })
         .eq("id", caseId)
         .select()
         .single();
     if (error) throw error;
-    await logCaseAction(caseId, user.id, ACTION_TYPES.CASE_RETURNED, "pending review", "in progress").catch(() => {});
+    await logCaseAction(caseId, user.id, ACTION_TYPES.CASE_RETURNED, "pending review", "revision_requested").catch(() => {});
     if (instructorFeedback?.trim()) {
         await logCaseAction(caseId, user.id, ACTION_TYPES.FEEDBACK_ADDED, null, instructorFeedback.trim()).catch(() => {});
     }
     return data;
 }
 
-export async function assignCase(templateId, studentId, patientSnapshot, dueDate, assignmentNotes) {
+export async function gradeCase(caseId, { rubricScores, chartAnnotations, score, feedback, decision }) {
+    const { data: { user } } = await supabase.auth.getUser();
+    const newStatus = decision === "approve" ? "completed" : "revision_requested";
+
+    const { data, error } = await supabase
+        .from("assigned_cases")
+        .update({
+            encounter_status: newStatus,
+            rubric_scores: rubricScores,
+            chart_annotations: chartAnnotations,
+            score,
+            instructor_feedback: feedback,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", caseId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    const actionType = decision === "approve" ? ACTION_TYPES.CASE_SIGNED_OFF : ACTION_TYPES.CASE_RETURNED;
+    await logCaseAction(caseId, user.id, actionType, "pending review", newStatus).catch(() => {});
+    if (feedback?.trim()) {
+        await logCaseAction(caseId, user.id, ACTION_TYPES.FEEDBACK_ADDED, null, feedback.trim()).catch(() => {});
+    }
+
+    return data;
+}
+
+export async function assignCase(templateId, studentId, patientSnapshot, dueDate = null, assignmentNotes = null) {
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase
         .from("assigned_cases")
