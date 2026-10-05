@@ -1,8 +1,6 @@
 import { supabase } from "../supabase.js";
 
 // ask the create student edge function to create a new student account
-
-
 export async function createStudent(student) {
     const { data, error } = await supabase.functions.invoke("create-student",
         {
@@ -28,7 +26,6 @@ export async function createStudent(student) {
         }
 
         throw new Error(message);
-
     }
 
     // Any unexpected successful response will be treated as an error
@@ -37,6 +34,29 @@ export async function createStudent(student) {
     }
 
     return data.student;
+}
+
+export async function enrollStudent(studentId, courseNumber, crn) {
+    const { data, error } = await supabase.functions.invoke("enroll-in-course", {
+        body: { studentId, courseNumber, crn },
+    });
+
+    if (error) {
+        let message = error.message;
+
+        if (error.context instanceof Response) {
+            try {
+                const details = await error.context.json();
+                message = details.error ?? message;
+            } catch {
+                // Keep the original error message.
+            }
+        }
+
+        throw new Error(message);
+    }
+
+    return data;
 }
 
 // here we need to turn an the edge function error into a message we can show on screen.
