@@ -9,6 +9,9 @@ import TagSelector from "../components/TagSelector.jsx";
 import MedicationSelector from "../components/MedicationSelector.jsx";
 
 const EMPTY_FORM = {
+    title: "",
+    target_year: "",
+    discipline: "",
     first_name: "",
     last_name: "",
     date_of_birth: "",
@@ -22,6 +25,8 @@ const EMPTY_FORM = {
     allergies: [],
     medical_history: [],
     chief_complaint: "",
+    student_instructions: "",
+    hidden_diagnosis: "",
 };
 
 const DEFAULT_RUBRIC_CRITERIA = [
@@ -53,6 +58,9 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                 try {
                     const t = await getTemplateById(templateId);
                     setForm({
+                        title: t.title ?? "",
+                        target_year: t.target_year ?? "",
+                        discipline: t.discipline ?? "",
                         first_name: t.first_name,
                         last_name: t.last_name,
                         date_of_birth: t.date_of_birth ?? "",
@@ -66,6 +74,8 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                         allergies: Array.isArray(t.allergies) ? t.allergies : [],
                         medical_history: Array.isArray(t.medical_history) ? t.medical_history : [],
                         chief_complaint: t.chief_complaint,
+                        student_instructions: t.student_instructions ?? "",
+                        hidden_diagnosis: t.hidden_diagnosis ?? "",
                     });
                     
                     if (t.current_medications) {
@@ -221,6 +231,9 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
         }
 
         const payload = {
+            title: form.title.trim() || null,
+            target_year: form.target_year.trim() || null,
+            discipline: form.discipline.trim() || null,
             first_name: form.first_name.trim(),
             last_name: form.last_name.trim(),
             date_of_birth: form.date_of_birth || null,
@@ -238,6 +251,8 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
             clinical_baseline,
             traps,
             rubric_criteria: rubricCriteria,
+            student_instructions: form.student_instructions.trim() || null,
+            hidden_diagnosis: form.hidden_diagnosis.trim() || null,
             expectations_rubric: expectationsRubric.trim() || null,
         };
 
@@ -292,6 +307,51 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                 {error && (
                     <p className="form-message form-message-error" role="alert">{error}</p>
                 )}
+
+                {/* ── Case Setup ───────────────────────────────── */}
+                <div className="instructor-form-section">
+                    <h3 className="instructor-form-section-title">Case Setup</h3>
+                    <div className="instructor-form-grid">
+                        <div className="student-form-field instructor-form-wide">
+                            <label htmlFor="title">Case Title</label>
+                            <input
+                                id="title"
+                                name="title"
+                                type="text"
+                                value={form.title}
+                                onChange={handleChange}
+                                disabled={submitting}
+                                placeholder="e.g. Acute Chest Pain — Suspected STEMI"
+                            />
+                        </div>
+
+                        <div className="student-form-field">
+                            <label htmlFor="target_year">Target Year</label>
+                            <input
+                                id="target_year"
+                                name="target_year"
+                                type="text"
+                                value={form.target_year}
+                                onChange={handleChange}
+                                disabled={submitting}
+                                placeholder="e.g. P1, P2, P3"
+                            />
+                        </div>
+
+                        <div className="student-form-field">
+                            <label htmlFor="discipline">Discipline</label>
+                            <input
+                                id="discipline"
+                                name="discipline"
+                                type="text"
+                                value={form.discipline}
+                                onChange={handleChange}
+                                disabled={submitting}
+                                placeholder="e.g. Pharmacotherapy"
+                            />
+                        </div>
+                    </div>
+                </div>
 
                 {/* ── Patient Identity ─────────────────────────── */}
                 <div className="instructor-form-section">
@@ -524,6 +584,51 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                                 </button>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* ── Student Instructions ─────────────────────── */}
+                <div className="instructor-form-section">
+                    <h3 className="instructor-form-section-title">Student Instructions</h3>
+                    <p className="instructor-baseline-hint">
+                        Visible to the student when they open the case. Use this to set context or direct their focus.
+                    </p>
+                    <div className="student-form-field instructor-form-wide">
+                        <textarea
+                            id="student_instructions"
+                            name="student_instructions"
+                            rows={4}
+                            value={form.student_instructions}
+                            onChange={handleChange}
+                            disabled={submitting}
+                            className="instructor-textarea"
+                            placeholder="e.g. You are a pharmacist student on rotation. The patient presents to the emergency department..."
+                        />
+                    </div>
+                </div>
+
+                {/* ── Hidden Diagnosis ──────────────────────────── */}
+                <div className="instructor-form-section">
+                    <h3 className="instructor-form-section-title">
+                        Hidden Diagnosis
+                        <span style={{ marginLeft: "0.6rem", fontSize: "0.75rem", fontWeight: 400, color: "var(--text-muted)", background: "#fef3c7", padding: "0.1rem 0.5rem", borderRadius: "999px" }}>
+                            Not shown to students
+                        </span>
+                    </h3>
+                    <p className="instructor-baseline-hint">
+                        The confirmed diagnosis for this case. Students will not see this field.
+                    </p>
+                    <div className="student-form-field instructor-form-wide">
+                        <textarea
+                            id="hidden_diagnosis"
+                            name="hidden_diagnosis"
+                            rows={2}
+                            value={form.hidden_diagnosis}
+                            onChange={handleChange}
+                            disabled={submitting}
+                            className="instructor-textarea"
+                            placeholder="e.g. STEMI — Left anterior descending artery occlusion"
+                        />
                     </div>
                 </div>
 

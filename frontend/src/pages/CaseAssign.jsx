@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
     getTemplateById,
     getStudents,
+    getMyCourses,
+    getCourseStudents,
     assignCase,
 } from "../services/instructorService.js";
 
@@ -10,6 +12,10 @@ export default function CaseAssign({ templateId, onNavigate }) {
     const [students, setStudents] = useState([]);
     const [selected, setSelected] = useState([]);
     const [search, setSearch] = useState("");
+    const [dueDate, setDueDate] = useState("");
+    const [assignmentNotes, setAssignmentNotes] = useState("");
+    const [courses, setCourses] = useState([]);
+    const [courseLoadingId, setCourseLoadingId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -17,12 +23,14 @@ export default function CaseAssign({ templateId, onNavigate }) {
     useEffect(() => {
         async function load() {
             try {
-                const [tmpl, studs] = await Promise.all([
+                const [tmpl, studs, crs] = await Promise.all([
                     getTemplateById(templateId),
                     getStudents(),
+                    getMyCourses(),
                 ]);
                 setTemplate(tmpl);
                 setStudents(studs);
+                setCourses(crs);
             } catch (err) {
                 console.error(err);
                 setError("Failed to load data.");
@@ -38,6 +46,20 @@ export default function CaseAssign({ templateId, onNavigate }) {
                 ? prev.filter((id) => id !== userId)
                 : [...prev, userId]
         );
+    }
+
+    async function handleCourseSelect(courseId) {
+        if (!courseId) return;
+        setCourseLoadingId(courseId);
+        try {
+            const enrolled = await getCourseStudents(courseId);
+            const ids = enrolled.map((s) => s.user_id);
+            setSelected(ids);
+        } catch (err) {
+            console.error(err);
+            setError("Failed to load course students.");
+        }
+        setCourseLoadingId(null);
     }
 
     const filteredStudents = students.filter((s) => {
@@ -76,11 +98,14 @@ export default function CaseAssign({ templateId, onNavigate }) {
             clinical_baseline: template.clinical_baseline,
             traps: template.traps || [],
             rubric_criteria: template.rubric_criteria || [],
+            student_instructions: template.student_instructions,
+            expectations_rubric: template.expectations_rubric,
+            // hidden_diagnosis is intentionally excluded from this snapshot
         };
 
         const results = await Promise.allSettled(
             selected.map((studentId) =>
-                assignCase(templateId, studentId, patientSnapshot)
+                assignCase(templateId, studentId, patientSnapshot, dueDate, assignmentNotes)
             )
         );
 
@@ -141,6 +166,73 @@ export default function CaseAssign({ templateId, onNavigate }) {
                     </div>
                 </div>
             )}
+
+            {/* ── Assign by Course ──────────────────────────── */}
+            <div className="instructor-form-panel" style={{ marginBottom: "1rem" }}>
+                <div className="instructor-form-section">
+                    <h3 className="instructor-form-section-title">Assign by Course</h3>
+                    <p className="instructor-baseline-hint">
+                        Select a course to automatically select all enrolled students.
+                    </p>
+                    <div className="student-form-field">
+                        <select
+                            className="instructor-search-input"
+                            defaultValue=""
+                            onChange={(e) => handleCourseSelect(e.target.value)}
+                            disabled={submitting || courseLoadingId !== null}
+                        >
+                            <option value="" disabled>
+                                {courses.length === 0
+                                    ? "No courses yet — import students to create a course"
+                                    : courseLoadingId !== null
+                                    ? "Loading…"
+                                    : "Select a course…"}
+                            </option>
+                            {courses.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.course_number} — CRN {c.crn}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {selected.length > 0 && (
+                        <p className="instructor-baseline-hint" style={{ marginTop: "0.5rem" }}>
+                            {selected.length} student{selected.length !== 1 ? "s" : ""} selected. Adjust individually below if needed.
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            {/* ── Assignment Details ────────────────────────── */}
+            <div className="instructor-form-panel" style={{ marginBottom: "1rem" }}>
+                <div className="instructor-form-section">
+                    <h3 className="instructor-form-section-title">Assignment Details</h3>
+                    <div className="instructor-form-grid">
+                        <div className="student-form-field">
+                            <label htmlFor="due-date">Due Date</label>
+                            <input
+                                id="due-date"
+                                type="date"
+                                value={dueDate}
+                                onChange={(e) => setDueDate(e.target.value)}
+                                disabled={submitting}
+                            />
+                        </div>
+                        <div className="student-form-field instructor-form-wide">
+                            <label htmlFor="assignment-notes">Assignment Notes</label>
+                            <textarea
+                                id="assignment-notes"
+                                rows={3}
+                                value={assignmentNotes}
+                                onChange={(e) => setAssignmentNotes(e.target.value)}
+                                disabled={submitting}
+                                className="instructor-textarea"
+                                placeholder="Optional instructions or context for this specific assignment…"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {error && (
                 <p className="form-message form-message-error" role="alert">{error}</p>

@@ -138,7 +138,7 @@ export default function App() {
             break;
         case "studentManagement":
             pageContent = canManageStudents
-                ? <StudentManagement onNavigate={navigate} />
+                ? <StudentManagement onNavigate={navigate} canManageAccounts={isAdmin} />
                 : <Dashboard user={user} onNavigate={navigate} />;
             break;
         case "appointments":

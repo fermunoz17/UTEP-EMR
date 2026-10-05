@@ -10,7 +10,7 @@ import TagSelector from "../components/TagSelector.jsx";
 import PTSoapNote from "../components/PTSoapNote.jsx";
 
 const STATUS_STYLES = {
-    "not started":        { background: "#f1f5f9", color: "#64748b" },
+    "not started":        { background: "#ede9fe", color: "#6d28d9" },
     "in progress":        { background: "#e0f2fe", color: "#0284c7" },
     "revision_requested": { background: "#fff7ed", color: "#c2410c" },
     "pending review":     { background: "#fef3c7", color: "#b45309" },
@@ -18,10 +18,10 @@ const STATUS_STYLES = {
 };
 
 const STATUS_LABELS = {
-    "not started":        "Not Started",
+    "not started":        "Assigned",
     "in progress":        "In Progress",
     "revision_requested": "Revision Requested",
-    "pending review":     "Pending Review",
+    "pending review":     "Submitted",
     "completed":          "Completed",
 };
 
@@ -245,10 +245,11 @@ export default function StudentCases({ onNavigate }) {
                                     const snap = c.patient_snapshot ?? {};
                                     const statusStyle = STATUS_STYLES[c.encounter_status] ?? STATUS_STYLES["not started"];
                                     const actionLabel =
-                                        c.encounter_status === "not started" ? "Start Case"
+                                        c.encounter_status === "not started" ? "Open Case"
                                         : c.encounter_status === "revision_requested" ? "Revise"
                                         : c.encounter_status === "in progress" ? "Continue"
                                         : "View";
+
 
                                     return (
                                         <tr key={c.id} className="instructor-table-row">
@@ -309,6 +310,16 @@ export default function StudentCases({ onNavigate }) {
                         </div>
 
                         <div className="case-modal-body">
+                            {/* Student Instructions */}
+                            {activeCase.patient_snapshot?.student_instructions && (
+                                <div className="case-modal-section">
+                                    <p className="case-modal-section-label">Instructions</p>
+                                    <div className="case-complaint-box">
+                                        <p>{activeCase.patient_snapshot.student_instructions}</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Patient snapshot */}
                             <div className="case-modal-section">
                                 <p className="case-modal-section-label">Patient Info</p>
@@ -407,6 +418,16 @@ export default function StudentCases({ onNavigate }) {
                                 </div>
                             )}
 
+                            {/* Expectations & Rubric */}
+                            {activeCase.patient_snapshot?.expectations_rubric && (
+                                <div className="case-modal-section">
+                                    <p className="case-modal-section-label">Expectations & Rubric</p>
+                                    <div className="case-notes-readonly">
+                                        {activeCase.patient_snapshot.expectations_rubric}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Instructor feedback and rubric scores — shown after revision_requested */}
                             {activeCase.encounter_status === "revision_requested" && (
                                 <div className="case-modal-section" style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "8px", padding: "1rem" }}>
@@ -441,7 +462,7 @@ export default function StudentCases({ onNavigate }) {
                                 </div>
                             )}
 
-                            {/* Legacy feedback field for completed cases */}
+                            {/* Feedback field for completed cases */}
                             {activeCase.encounter_status === "completed" && activeCase.instructor_feedback && (
                                 <div className="case-modal-section">
                                     <p className="case-modal-section-label">Instructor Feedback</p>
