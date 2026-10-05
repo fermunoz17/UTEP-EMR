@@ -74,6 +74,8 @@ export default function CaseAssign({ templateId, onNavigate }) {
             current_medications: template.current_medications,
             chief_complaint: template.chief_complaint,
             clinical_baseline: template.clinical_baseline,
+            traps: template.traps || [],
+            rubric_criteria: template.rubric_criteria || [],
         };
 
         const results = await Promise.allSettled(

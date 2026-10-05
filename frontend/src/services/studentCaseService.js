@@ -25,7 +25,6 @@ export async function saveCaseNotes(caseId, notes) {
         .from("assigned_cases")
         .update({
             encounter_notes: notes,
-            encounter_status: "in progress",
             updated_at: new Date().toISOString(),
         })
         .eq("id", caseId)
@@ -35,6 +34,8 @@ export async function saveCaseNotes(caseId, notes) {
     return data;
 }
 
+// Works whether the student is submitting for the first time (in progress)
+// or resubmitting after the instructor returned it (revision_requested)
 export async function submitCase(caseId, notes) {
     const { data, error } = await supabase
         .from("assigned_cases")

@@ -24,6 +24,13 @@ const EMPTY_FORM = {
     chief_complaint: "",
 };
 
+const DEFAULT_RUBRIC_CRITERIA = [
+    { key: "subjective",  label: "Subjective History",          maxPoints: 25 },
+    { key: "objective",   label: "Objective Findings & Vitals", maxPoints: 25 },
+    { key: "assessment",  label: "Assessment & Clinical Logic",  maxPoints: 25 },
+    { key: "plan",        label: "Plan & Safety Checks",        maxPoints: 25 },
+];
+
 export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
     const isEditing = Boolean(templateId);
     const isFromPatient = Boolean(patientId) && !isEditing;
@@ -31,11 +38,14 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
     const [form, setForm] = useState(EMPTY_FORM);
     const [expectationsRubric, setExpectationsRubric] = useState("");
     const [baseline, setBaseline] = useState([{ key: "", value: "" }]);
+    const [traps, setTraps] = useState([]);
+    const [rubricCriteria, setRubricCriteria] = useState(DEFAULT_RUBRIC_CRITERIA);
     const [loading, setLoading] = useState(isEditing || isFromPatient);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [activeTab, setActiveTab] = useState("allergies");
     const [medications, setMedications] = useState([]);
+
 
     useEffect(() => {
         if (isEditing) {
@@ -69,6 +79,12 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                             : [{ key: "", value: "" }]
                     );
                     setExpectationsRubric(t.expectations_rubric ?? "");
+                    setTraps(Array.isArray(t.traps) ? t.traps : []);
+                    setRubricCriteria(
+                        Array.isArray(t.rubric_criteria) && t.rubric_criteria.length > 0
+                            ? t.rubric_criteria
+                            : DEFAULT_RUBRIC_CRITERIA
+                    );
                 } catch (err) {
                     console.error(err);
                     setError("Failed to load template.");
@@ -105,6 +121,8 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
 
                     const baselineRows = [{ key: "", value: "" }];
                     setBaseline(baselineRows);
+                    setTraps([]);
+                    setRubricCriteria(DEFAULT_RUBRIC_CRITERIA);
                 } catch (err) {
                     console.error(err);
                     setError("Failed to load patient data.");
@@ -134,6 +152,52 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
 
     function removeBaselineRow(index) {
         setBaseline((prev) => prev.filter((_, i) => i !== index));
+    }
+
+    function addTrap() {
+        setTraps((prev) => [
+            ...prev,
+            {
+                id: Date.now().toString(),
+                category: "Drug Interaction",
+                trigger: "",
+                expected_action: "",
+                severity: "Critical",
+            },
+        ]);
+    }
+
+    function updateTrap(index, field, value) {
+        setTraps((prev) => {
+            const next = [...prev];
+            next[index] = { ...next[index], [field]: value };
+            return next;
+        });
+    }
+
+    function removeTrap(index) {
+        setTraps((prev) => prev.filter((_, i) => i !== index));
+    }
+
+    function addRubricRow() {
+        const key = `crit_${Date.now()}`;
+        setRubricCriteria((prev) => [
+            ...prev,
+            { key, label: "", maxPoints: 10 },
+        ]);
+    }
+
+    function updateRubricRow(index, field, value) {
+        setRubricCriteria((prev) => {
+            const next = [...prev];
+            const parsedVal = field === "maxPoints" ? (parseInt(value, 10) || 0) : value;
+            next[index] = { ...next[index], [field]: parsedVal };
+            return next;
+        });
+    }
+
+    function removeRubricRow(index) {
+        setRubricCriteria((prev) => prev.filter((_, i) => i !== index));
     }
 
     async function handleSubmit(e) {
@@ -172,6 +236,8 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
             current_medications: medications,
             chief_complaint: form.chief_complaint.trim(),
             clinical_baseline,
+            traps,
+            rubric_criteria: rubricCriteria,
             expectations_rubric: expectationsRubric.trim() || null,
         };
 
@@ -461,22 +527,193 @@ export default function TemplateBuilder({ templateId, patientId, onNavigate }) {
                     </div>
                 </div>
 
-                {/* ── Expectations & Rubric ─────────────────────── */}
+                {/* ── Deliberate Clinical Traps (Step 3) ──────────── */}
                 <div className="instructor-form-section">
-                    <h3 className="instructor-form-section-title">Grading Rubric & Clinical Expectations</h3>
+                    <div className="instructor-baseline-header">
+                        <div>
+                            <h3 className="instructor-form-section-title">Deliberate Clinical "Traps"</h3>
+                            <p className="instructor-baseline-hint">
+                                Set intentional safety risks, drug interactions, or abnormal values the student must catch.
+                            </p>
+                        </div>
+                        <button
+                            className="secondary-action-button"
+                            type="button"
+                            onClick={addTrap}
+                            disabled={submitting}
+                        >
+                            + Add Trap
+                        </button>
+                    </div>
+
+                    {traps.length === 0 ? (
+                        <div style={{ padding: "1.25rem", background: "#f8fafc", border: "1px dashed #cbd5e1", borderRadius: "8px", textAlign: "center", color: "#64748b" }}>
+                            No deliberate traps added yet. Click <strong>+ Add Trap</strong> to plant a clinical challenge for students.
+                        </div>
+                    ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                            {traps.map((trap, idx) => (
+                                <div key={idx} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "1rem" }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                                        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flex: 1 }}>
+                                            <span style={{ fontWeight: 600, fontSize: "0.85rem", color: "#1e293b" }}>
+                                                Trap #{idx + 1}
+                                            </span>
+                                            <select
+                                                value={trap.category || "Drug Interaction"}
+                                                onChange={(e) => updateTrap(idx, "category", e.target.value)}
+                                                disabled={submitting}
+                                                className="instructor-search-input"
+                                                style={{ width: "auto", minWidth: "180px", padding: "0.3rem 0.5rem" }}
+                                            >
+                                                <option value="Drug Interaction">Drug Interaction</option>
+                                                <option value="Abnormal Lab Result">Abnormal Lab Result</option>
+                                                <option value="Contraindicated Medication">Contraindicated Medication</option>
+                                                <option value="Allergy Conflict">Allergy Conflict</option>
+                                                <option value="Vital Sign Decompensation">Vital Sign Decompensation</option>
+                                                <option value="Diagnostic Red Herring">Diagnostic Red Herring</option>
+                                                <option value="Other Safety Risk">Other Safety Risk</option>
+                                            </select>
+                                            <select
+                                                value={trap.severity || "Critical"}
+                                                onChange={(e) => updateTrap(idx, "severity", e.target.value)}
+                                                disabled={submitting}
+                                                className="instructor-search-input"
+                                                style={{ width: "auto", padding: "0.3rem 0.5rem" }}
+                                            >
+                                                <option value="Critical">Critical Severity</option>
+                                                <option value="Moderate">Moderate Severity</option>
+                                                <option value="Warning">Warning</option>
+                                            </select>
+                                        </div>
+                                        <button
+                                            className="instructor-baseline-remove"
+                                            type="button"
+                                            onClick={() => removeTrap(idx)}
+                                            disabled={submitting}
+                                            aria-label="Remove trap"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                                        <div>
+                                            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#475569", marginBottom: "0.25rem", textTransform: "uppercase" }}>
+                                                Planted Trigger / Condition
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="instructor-search-input"
+                                                placeholder="e.g. Lisinopril prescribed alongside Spironolactone"
+                                                value={trap.trigger || ""}
+                                                onChange={(e) => updateTrap(idx, "trigger", e.target.value)}
+                                                disabled={submitting}
+                                                style={{ width: "100%", background: "#fff" }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#475569", marginBottom: "0.25rem", textTransform: "uppercase" }}>
+                                                Expected Student Action
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="instructor-search-input"
+                                                placeholder="e.g. Flag hyperkalemia risk, discontinue potassium-sparing diuretic"
+                                                value={trap.expected_action || ""}
+                                                onChange={(e) => updateTrap(idx, "expected_action", e.target.value)}
+                                                disabled={submitting}
+                                                style={{ width: "100%", background: "#fff" }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* ── Grading Rubric Criteria (Step 6) ───────────── */}
+                <div className="instructor-form-section">
+                    <div className="instructor-baseline-header">
+                        <div>
+                            <h3 className="instructor-form-section-title">Grading Rubric Criteria</h3>
+                            <p className="instructor-baseline-hint">
+                                Configure the criteria and maximum points used to score student encounter notes.
+                            </p>
+                        </div>
+                        <button
+                            className="secondary-action-button"
+                            type="button"
+                            onClick={addRubricRow}
+                            disabled={submitting}
+                        >
+                            + Add Criterion
+                        </button>
+                    </div>
+
+                    <div className="instructor-baseline-list">
+                        {rubricCriteria.map((row, i) => (
+                            <div key={i} className="instructor-baseline-row">
+                                <input
+                                    type="text"
+                                    placeholder="Criterion Label (e.g. Assessment & Clinical Logic)"
+                                    value={row.label}
+                                    onChange={(e) => updateRubricRow(i, "label", e.target.value)}
+                                    disabled={submitting}
+                                    className="instructor-baseline-key"
+                                    style={{ flex: "1 1 70%" }}
+                                />
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flex: "0 0 120px" }}>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={100}
+                                        placeholder="Points"
+                                        value={row.maxPoints}
+                                        onChange={(e) => updateRubricRow(i, "maxPoints", e.target.value)}
+                                        disabled={submitting}
+                                        className="instructor-baseline-value"
+                                        style={{ width: "100%" }}
+                                    />
+                                    <span style={{ fontSize: "0.8rem", color: "#64748b" }}>pts</span>
+                                </div>
+                                <button
+                                    className="instructor-baseline-remove"
+                                    type="button"
+                                    onClick={() => removeRubricRow(i)}
+                                    disabled={submitting || rubricCriteria.length <= 1}
+                                    aria-label="Remove criterion"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div style={{ marginTop: "0.75rem", display: "flex", justifyContent: "flex-end" }}>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155" }}>
+                            Total Rubric Points: {rubricCriteria.reduce((sum, r) => sum + (Number(r.maxPoints) || 0), 0)} pts
+                        </span>
+                    </div>
+                </div>
+
+                {/* ── General Expectations & Notes ──────────────── */}
+                <div className="instructor-form-section">
+                    <h3 className="instructor-form-section-title">Clinical Expectations & Reference Notes</h3>
                     <p className="instructor-baseline-hint">
-                        What should the student document? Include any key milestones or traps you've built into the case.
+                        Internal notes or key milestones for this case scenario (visible to instructors during review).
                     </p>
                     <div className="student-form-field instructor-form-wide">
                         <textarea
                             id="expectations_rubric"
                             name="expectations_rubric"
-                            rows={4}
+                            rows={3}
                             value={expectationsRubric}
                             onChange={(e) => setExpectationsRubric(e.target.value)}
                             disabled={submitting}
                             className="instructor-textarea"
-                            placeholder="Paste required documentation elements, milestones, or deliberate clinical traps here..."
+                            placeholder="Add reference notes, ideal differential diagnoses, or specific instructions for this scenario..."
                         />
                     </div>
                 </div>
