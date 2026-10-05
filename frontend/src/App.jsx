@@ -9,6 +9,10 @@ import PatientLookup from "./pages/PatientLookup.jsx";
 import StudentPatientDetail from "./pages/StudentPatientDetail.jsx";
 import Appointments from "./pages/Appointments.jsx";
 import StudentManagement from "./pages/StudentManagement.jsx";
+import InstructorCases from "./pages/InstructorCases.jsx";
+import TemplateBuilder from "./pages/TemplateBuilder.jsx";
+import CaseAssign from "./pages/CaseAssign.jsx";
+import StudentCases from "./pages/StudentCases.jsx";
 
 import {
     getSession,
@@ -25,8 +29,8 @@ export default function App() {
     const [error, setError] = useState("");
     const [nav, setNav] = useState({ page: "dashboard", id: null });
 
-    function navigate(page, id = null) {
-        setNav({ page, id });
+    function navigate(page, id = null, extra = {}) {
+        setNav({ page, id, ...extra });
     }
 
     useEffect(() => {
@@ -85,21 +89,32 @@ export default function App() {
     if (!user) return <p>Loading account...</p>;
 
     const isAdmin = user.profile.account_type === "admin";
-    // Both administrators and instructors may access student management.
+    const isInstructor = user.profile.account_type === "instructor";
     const canManageStudents = ["admin", "instructor"].includes(
         user.profile.account_type,
     );
-    const navbarPage = nav.page === "studentManagement" ? "students"
+    const canManageCases = ["admin", "instructor"].includes(
+        user.profile.account_type,
+    );
+
+    const navbarPage =
+        nav.page === "studentManagement" ? "students"
         : nav.page === "patientManager" || nav.page === "patientDetail" ? "patients"
-            : nav.page === "patientLookup" || nav.page === "studentPatientDetail" ? "patients"
-                : nav.page === "appointments" ? "appointments"
-                    : "dashboard";
+        : nav.page === "patientLookup" || nav.page === "studentPatientDetail" ? "patients"
+        : nav.page === "appointments" ? "appointments"
+        : nav.page === "instructorCases" || nav.page === "templateBuilder" || nav.page === "caseAssign" ? "cases"
+        : nav.page === "studentCases" ? "myCases"
+        : "dashboard";
 
     function handleNavbarNavigate(page) {
         if (page === "students" && canManageStudents) {
             navigate("studentManagement");
+        } else if (page === "cases" && canManageCases) {
+            navigate("instructorCases");
+        } else if (page === "myCases") {
+            navigate("studentCases");
         } else if (page === "patients") {
-            navigate(isAdmin ? "patientManager" : "patientLookup");
+            navigate(isAdmin || isInstructor ? "patientManager" : "patientLookup");
         } else if (page === "appointments") {
             navigate("appointments");
         } else {
@@ -123,11 +138,29 @@ export default function App() {
             break;
         case "studentManagement":
             pageContent = canManageStudents
-                ? <StudentManagement onNavigate={navigate} />
+                ? <StudentManagement onNavigate={navigate} canManageAccounts={isAdmin} />
                 : <Dashboard user={user} onNavigate={navigate} />;
             break;
         case "appointments":
             pageContent = <Appointments onNavigate={navigate} />;
+            break;
+        case "instructorCases":
+            pageContent = canManageCases
+                ? <InstructorCases onNavigate={navigate} />
+                : <Dashboard user={user} onNavigate={navigate} />;
+            break;
+        case "templateBuilder":
+            pageContent = canManageCases
+                ? <TemplateBuilder templateId={nav.id} patientId={nav.fromPatientId ?? null} onNavigate={navigate} />
+                : <Dashboard user={user} onNavigate={navigate} />;
+            break;
+        case "caseAssign":
+            pageContent = canManageCases
+                ? <CaseAssign templateId={nav.id} onNavigate={navigate} />
+                : <Dashboard user={user} onNavigate={navigate} />;
+            break;
+        case "studentCases":
+            pageContent = <StudentCases onNavigate={navigate} />;
             break;
         case "dashboard":
         default:

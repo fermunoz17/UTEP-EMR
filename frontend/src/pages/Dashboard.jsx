@@ -10,6 +10,7 @@ export default function Dashboard({ user, onNavigate }) {
         "User";
 
     const isAdmin = profile.account_type === "admin";
+    const isInstructor = profile.account_type === "instructor";
     // Admins and instructors can create student accounts.
     const canManageStudents = ["admin", "instructor"].includes(
         profile.account_type,
@@ -91,7 +92,7 @@ export default function Dashboard({ user, onNavigate }) {
                     </div>
 
                     <div className="quick-access-grid">
-                        {isAdmin ? (
+                        {isAdmin || isInstructor? (
                             <button className="quick-access-card" type="button" onClick={() => onNavigate("patientManager")}>
                                 <span className="quick-icon" aria-hidden="true">🗂️</span>
                                 <span className="quick-content">
@@ -100,6 +101,25 @@ export default function Dashboard({ user, onNavigate }) {
                                 </span>
                                 <span className="quick-arrow" aria-hidden="true">→</span>
                             </button>
+                        ) : profile.account_type === "student" ? (
+                            <>
+                                <button className="quick-access-card" type="button" onClick={() => onNavigate("studentCases")}>
+                                    <span className="quick-icon" aria-hidden="true">📋</span>
+                                    <span className="quick-content">
+                                        <strong>My Cases</strong>
+                                        <small>View training cases assigned to you</small>
+                                    </span>
+                                    <span className="quick-arrow" aria-hidden="true">→</span>
+                                </button>
+                                <button className="quick-access-card" type="button" onClick={() => onNavigate("patientLookup")}>
+                                    <span className="quick-icon" aria-hidden="true">🔍</span>
+                                    <span className="quick-content">
+                                        <strong>Patient Lookup</strong>
+                                        <small>Find and open a patient record</small>
+                                    </span>
+                                    <span className="quick-arrow" aria-hidden="true">→</span>
+                                </button>
+                            </>
                         ) : (
                             <>
                                 <button className="quick-access-card" type="button" onClick={() => onNavigate("patientLookup")}>
@@ -135,6 +155,21 @@ export default function Dashboard({ user, onNavigate }) {
                                     <small>Create student login accounts</small>
                                 </span>
 
+                                <span className="quick-arrow" aria-hidden="true">→</span>
+                            </button>
+                        )}
+                        {/* Instructor Dashboard */}
+                        {profile.account_type === "instructor" && (
+                            <button
+                                className="quick-access-card"
+                                type="button"
+                                onClick={() => onNavigate("instructorCases")}
+                            >
+                                <span className="quick-icon" aria-hidden="true">📋</span>
+                                <span className="quick-content">
+                                    <strong>Case Management</strong>
+                                    <small>Create and assign training cases</small>
+                                </span>
                                 <span className="quick-arrow" aria-hidden="true">→</span>
                             </button>
                         )}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase.js";
 import MedicationSelector from "../components/MedicationSelector.jsx";
+import TagSelector from "../components/TagSelector.jsx";
 
 export default function PatientDetail({ id, onNavigate }) {
     const [patient, setPatient] = useState(null);
@@ -11,6 +12,7 @@ export default function PatientDetail({ id, onNavigate }) {
     const [error, setError] = useState("");
     const [form, setForm] = useState({});
     const [editMeds, setEditMeds] = useState([]);
+    const [activeTab, setActiveTab] = useState("allergies");
 
     useEffect(() => {
         fetchData();
@@ -46,9 +48,15 @@ export default function PatientDetail({ id, onNavigate }) {
             age: data.age ?? "",
             sex: data.sex ?? "",
             occupation: data.occupation ?? "",
-            medications: data.medications ?? "",
             last_visit: data.last_visit ?? "",
             last_visit_notes: data.last_visit_notes ?? "",
+            date_of_birth: data.date_of_birth ?? "",
+            phone_number: data.phone_number ?? "",
+            email: data.email ?? "",
+            allergies: Array.isArray(data.allergies) ? data.allergies: [],
+            medical_history: Array.isArray(data.medical_history) ? data.medical_history : [],
+            emergency_contact_name: data.emergency_contacts?.[0]?.name ?? "",
+            emergency_contact_phone: data.emergency_contacts?.[0]?.phone ?? "",
         };
     }
 
@@ -61,19 +69,24 @@ export default function PatientDetail({ id, onNavigate }) {
         setSaving(true);
         setError("");
 
-        const medicationsText = editMeds.length > 0
-            ? editMeds.map((m) => `${m.medicine.name} ${m.dosage}${m.medicine.unit} ${m.frequency}x/day`).join(", ")
-            : null;
-
         const { error } = await supabase
             .from("patients")
             .update({
                 first_name: form.first_name.trim(),
                 last_name: form.last_name.trim(),
+                date_of_birth: form.date_of_birth || null,
+                phone_number: form.phone_number || null,
+                email: form.email || null,
+                allergies: form.allergies,
+                medical_history: form.medical_history,
+                emergency_contacts: [{
+                    name: form.emergency_contact_name,
+                    phone: form.emergency_contact_phone
+                }],
                 age: parseInt(form.age, 10),
                 sex: form.sex || null,
                 occupation: form.occupation.trim() || null,
-                medications: medicationsText,
+                current_medications: editMeds,
                 last_visit: form.last_visit || null,
                 last_visit_notes: form.last_visit_notes.trim() || null,
                 updated_at: new Date().toISOString(),
@@ -133,6 +146,31 @@ export default function PatientDetail({ id, onNavigate }) {
                                 <input name="last_name" value={form.last_name} onChange={handleChange} required />
                             </div>
                         </div>
+                                                <div style={rowStyle}>
+                            <div style={fieldStyle}>
+                                <label>Date of Birth</label>
+                                <input type="date" name="date_of_birth" value={form.date_of_birth} onChange={handleChange} />
+                            </div>
+                            <div style={fieldStyle}>
+                                <label>Phone</label>
+                                <input name="phone_number" value={form.phone_number} onChange={handleChange} />
+                            </div>
+                            <div style={fieldStyle}>
+                                <label>Email</label>
+                                <input type="email" name="email" value={form.email} onChange={handleChange} />
+                            </div>
+                        </div>
+
+                        <div style={rowStyle}>
+                            <div style={fieldStyle}>
+                                <label>Emergency Contact Name</label>
+                                <input name="emergency_contact_name" value={form.emergency_contact_name} onChange={handleChange} />
+                            </div>
+                            <div style={fieldStyle}>
+                                <label>Emergency Contact Phone</label>
+                                <input name="emergency_contact_phone" value={form.emergency_contact_phone} onChange={handleChange} />
+                            </div>
+                        </div>
 
                         <div style={rowStyle}>
                             <div style={fieldStyle}>
@@ -153,9 +191,38 @@ export default function PatientDetail({ id, onNavigate }) {
                             </div>
                         </div>
 
-                        <div style={fieldStyle}>
-                            <label>Current Medications</label>
-                            <MedicationSelector value={editMeds} onChange={setEditMeds} />
+                        <div style={{ padding: "1rem", border: "1px solid #e0e0e0", borderRadius: "8px", background: "#fcfcfc", marginBottom: "1rem" }}>
+                            <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "1rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
+                                <button type="button" onClick={() => setActiveTab("allergies")} style={activeTab === "allergies" ? activeTabStyle : inactiveTabStyle}>Allergies</button>
+                                <button type="button" onClick={() => setActiveTab("history")} style={activeTab === "history" ? activeTabStyle : inactiveTabStyle}>Medical History</button>
+                                <button type="button" onClick={() => setActiveTab("medications")} style={activeTab === "medications" ? activeTabStyle : inactiveTabStyle}>Medications</button>
+                            </div>
+
+                            {activeTab === "allergies" && (
+                                <div style={fieldStyle}>
+                                    <TagSelector 
+                                        value={form.allergies} 
+                                        onChange={(newVal) => setForm({...form, allergies: newVal})} 
+                                        placeholder="Add allergy..." 
+                                    />
+                                </div>
+                            )}
+
+                            {activeTab === "history" && (
+                                <div style={fieldStyle}>
+                                    <TagSelector 
+                                        value={form.medical_history} 
+                                        onChange={(newVal) => setForm({...form, medical_history: newVal})} 
+                                        placeholder="Add condition..." 
+                                    />
+                                </div>
+                            )}
+
+                            {activeTab === "medications" && (
+                                <div style={fieldStyle}>
+                                    <MedicationSelector value={editMeds} onChange={setEditMeds} />
+                                </div>
+                            )}
                         </div>
 
                         <div style={fieldStyle}>
@@ -170,13 +237,17 @@ export default function PatientDetail({ id, onNavigate }) {
 
                         <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
                             <button type="submit" disabled={saving}>{saving ? "Saving..." : "Save"}</button>
-                            <button type="button" onClick={() => { setEditing(false); setForm(toForm(patient)); setEditMeds([]); setError(""); }}>Cancel</button>
+                            <button type="button" onClick={() => { setEditing(false); setForm(toForm(patient)); setEditMeds(Array.isArray(patient.current_medications) ? patient.current_medications : []); setError(""); }}>Cancel</button>
                         </div>
                     </form>
                 ) : (
                     <>
                         <div style={sectionStyle}>
                             <h3>Basic Info</h3>
+                            <Detail label="Date of Birth" value={patient.date_of_birth} />
+                            <Detail label="Phone" value={patient.phone_number} />
+                            <Detail label="Email" value={patient.email} />
+                            <Detail label="Emergency Contact" value={patient.emergency_contacts?.[0] ? `${patient.emergency_contacts[0].name} (${patient.emergency_contacts[0].phone})` : null} />
                             <Detail label="Age" value={patient.age} />
                             <Detail label="Sex" value={patient.sex} />
                             <Detail label="Occupation" value={patient.occupation} />
@@ -184,10 +255,38 @@ export default function PatientDetail({ id, onNavigate }) {
 
                         <div style={sectionStyle}>
                             <h3>Medical</h3>
-                            <Detail
-                                label="Current Medications"
-                                value={visits.find((v) => v.medications)?.medications}
-                            />
+                            <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "1rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
+                                <button onClick={() => setActiveTab("allergies")} style={activeTab === "allergies" ? activeTabStyle : inactiveTabStyle}>Allergies</button>
+                                <button onClick={() => setActiveTab("history")} style={activeTab === "history" ? activeTabStyle : inactiveTabStyle}>Medical History</button>
+                                <button onClick={() => setActiveTab("medications")} style={activeTab === "medications" ? activeTabStyle : inactiveTabStyle}>Medications</button>
+                            </div>
+
+                            {activeTab === "allergies" && (
+                                <div>
+                                    {(!patient.allergies || patient.allergies.length === 0) ? <p style={{ color: "#aaa" }}>No allergies recorded.</p> : (
+                                        <TagSelector value={patient.allergies} readOnly={true} />
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === "history" && (
+                                <div>
+                                    {(!patient.medical_history || patient.medical_history.length === 0) ? <p style={{ color: "#aaa" }}>No medical history recorded.</p> : (
+                                        <TagSelector value={patient.medical_history} readOnly={true} />
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === "medications" && (
+                                <div>
+                                    {(!patient.current_medications || patient.current_medications.length === 0) ? <p style={{ color: "#aaa" }}>No medications recorded.</p> : (
+                                        <TagSelector 
+                                            value={patient.current_medications.map(m => `${m.medicine.name} ${m.dosage}${m.medicine.unit} ${m.frequency}x/day`)} 
+                                            readOnly={true} 
+                                        />
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div style={sectionStyle}>
@@ -211,7 +310,7 @@ export default function PatientDetail({ id, onNavigate }) {
                         </div>
 
                         <div style={{ display: "flex", gap: "0.5rem", marginTop: "1.5rem" }}>
-                            <button onClick={() => setEditing(true)}>Edit Patient</button>
+                            <button onClick={() => { setEditing(true); setEditMeds(Array.isArray(patient.current_medications) ? patient.current_medications : []); }}>Edit Patient</button>
                             <button onClick={handleDelete} style={{ color: "red" }}>Delete Patient</button>
                         </div>
                     </>
@@ -247,6 +346,7 @@ const sectionStyle = {
     marginBottom: "1.5rem",
     paddingBottom: "1rem",
     borderBottom: "1px solid #eee",
+    textAlign: "left"
 };
 
 const visitCardStyle = {
@@ -254,4 +354,22 @@ const visitCardStyle = {
     marginBottom: "0.75rem",
     border: "1px solid #e0e0e0",
     borderRadius: "6px",
+};
+
+const activeTabStyle = {
+    background: "none",
+    border: "none",
+    borderBottom: "2px solid #0056b3",
+    color: "#0056b3",
+    fontWeight: "bold",
+    cursor: "pointer",
+    padding: "0 0 0.25rem 0",
+};
+
+const inactiveTabStyle = {
+    background: "none",
+    border: "none",
+    color: "#888",
+    cursor: "pointer",
+    padding: "0 0 0.25rem 0",
 };

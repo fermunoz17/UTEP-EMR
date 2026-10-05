@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { createStudent } from "../services/students.js";
-
+import BulkStudentImport from "../components/BulkStudentImport.jsx";
+import StudentDirectory from "./StudentDirectory.jsx";
 
 // keep initial form values in one place so the form can be reset
 // after a student is created successfully
-
 
 const EMPTY_FORM = {
     firstName: "",
@@ -14,16 +14,15 @@ const EMPTY_FORM = {
     confirmPassword: "",
 };
 
-export default function StudentManagement({ onNavigate }) {
-    // store the current value of every form field
+export default function StudentManagement({ onNavigate, canManageAccounts }) {
     const [form, setForm] = useState(EMPTY_FORM);
-
-    // Prevent repeated submissions while the request is running
+    const [directoryVersion, setDirectoryVersion] = useState(0);
     const [submitting, setSubmitting] = useState(false);
-
     // Store feedback that will be displayed to the user
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+
+
 
     // update the matching form properly whenever an input changes
     function handleChange(event) {
@@ -57,7 +56,8 @@ export default function StudentManagement({ onNavigate }) {
             );
 
             // Clear all fields after a successful submission.
-            setForm(EMPTY_FORM);
+          setForm(EMPTY_FORM);
+          setDirectoryVersion((value) => value + 1);
         } catch (submissionError) {
             setError(
                 submissionError instanceof Error
@@ -77,7 +77,7 @@ export default function StudentManagement({ onNavigate }) {
       <div>
         <p className="eyebrow">Administration</p>
         <h2>Student Management</h2>
-        <p>Create a student account and provide their initial login details.</p>
+        <p>{canManageAccounts ? "View and manage student accounts." : "Create a student account and provide their initial login details."}</p>
       </div>
 
       <button
@@ -89,7 +89,7 @@ export default function StudentManagement({ onNavigate }) {
         Back to Dashboard
       </button>
     </header>
-
+      {canManageAccounts && <StudentDirectory refreshKey={directoryVersion} />}
     {/* The form is contained in its own section for accessibility. */}
     <section
       className="student-form-panel"
@@ -202,6 +202,7 @@ export default function StudentManagement({ onNavigate }) {
         </div>
       </form>
     </section>
+    <BulkStudentImport onImported={() => setDirectoryVersion((value) => value + 1)}/>
   </main>
 );
 }
