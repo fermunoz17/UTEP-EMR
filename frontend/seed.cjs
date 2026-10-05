@@ -110,7 +110,7 @@ async function seed() {
         age: 45,
         sex: 'Male',
         occupation: 'Software Engineer',
-        medications: 'Lisinopril 10mg daily',
+        current_medications: [{ medicine: { name: "Lisinopril", unit: "mg" }, dosage: 10, frequency: 1 }],
         last_visit: '2026-09-01',
         last_visit_notes: 'Patient complained of mild headaches.'
       }
@@ -156,6 +156,123 @@ async function seed() {
 
     if (apptError) console.error('Error creating appointment:', apptError.message);
     else console.log('Sample appointment created.');
+  }
+
+  // Seed course + enrollment
+  console.log('Looking up instructor and student IDs...');
+  const { data: userListForCourse } = await supabase.auth.admin.listUsers();
+  const instructorForCourse = userListForCourse?.users?.find(u => u.email === 'instructor@test.com');
+  const studentForCourse = userListForCourse?.users?.find(u => u.email === 'student@test.com');
+
+  if (instructorForCourse && studentForCourse) {
+    console.log('Creating sample course...');
+    const { data: course, error: courseError } = await supabase
+      .from('courses')
+      .upsert(
+        { instructor_id: instructorForCourse.id, course_number: 'PHARM 4301', crn: '11234' },
+        { onConflict: 'instructor_id,crn', ignoreDuplicates: false }
+      )
+      .select('id')
+      .single();
+
+    if (courseError) {
+      console.error('Error creating course:', courseError.message);
+    } else {
+      console.log('Sample course created with ID:', course.id);
+
+      const { error: enrollError } = await supabase
+        .from('course_enrollments')
+        .upsert(
+          { course_id: course.id, student_id: studentForCourse.id, enrolled_by: instructorForCourse.id },
+          { onConflict: 'course_id,student_id', ignoreDuplicates: true }
+        );
+
+      if (enrollError) console.error('Error enrolling student:', enrollError.message);
+      else console.log('student@test.com enrolled in PHARM 4301.');
+    }
+  }
+
+  // Seed template + case assignment
+  console.log('Looking up instructor and student IDs...');
+  const { data: userList } = await supabase.auth.admin.listUsers();
+  const instructorUser = userList?.users?.find(u => u.email === 'instructor@test.com');
+  const studentUser = userList?.users?.find(u => u.email === 'student@test.com');
+
+  if (instructorUser && studentUser) {
+    console.log('Creating sample template...');
+    const { data: template, error: templateError } = await supabase
+      .from('patient_templates')
+      .insert({
+        instructor_id: instructorUser.id,
+        title: 'Chest Pain — Rule Out ACS',
+        target_year: 'P2',
+        discipline: 'Pharmacotherapy',
+        first_name: 'Maria',
+        last_name: 'Garcia',
+        age: 58,
+        sex: 'Female',
+        occupation: 'Teacher',
+        chief_complaint: 'Chest pain radiating to the left arm for the past 2 hours.',
+        clinical_baseline: {
+          'BP': '158/94 mmHg',
+          'HR': '102 bpm',
+          'RR': '18 breaths/min',
+          'Temp': '37.1°C',
+          'O2 Sat': '96% on room air',
+          'Troponin I': '0.08 ng/mL (elevated)',
+          'BNP': '210 pg/mL',
+        },
+        student_instructions: 'You are a pharmacy student on rotation in the emergency department. The patient was brought in by ambulance. Review her history, assess her medications, and document your clinical reasoning and recommended pharmacotherapy plan.',
+        hidden_diagnosis: 'NSTEMI — Non-ST-elevation myocardial infarction',
+        expectations_rubric: '1. Identify the likely diagnosis based on vitals and labs\n2. List at least 3 drug therapy recommendations with rationale\n3. Note any drug interactions or contraindications\n4. Document monitoring parameters for chosen therapies',
+        allergies: ['Penicillin'],
+        medical_history: ['Hypertension', 'Type 2 Diabetes', 'Hyperlipidemia'],
+        current_medications: [
+          { medicine: { name: 'Metformin', unit: 'mg' }, dosage: 500, frequency: 2 },
+          { medicine: { name: 'Atorvastatin', unit: 'mg' }, dosage: 40, frequency: 1 },
+          { medicine: { name: 'Amlodipine', unit: 'mg' }, dosage: 5, frequency: 1 },
+        ],
+      })
+      .select()
+      .single();
+
+    if (templateError) {
+      console.error('Error creating template:', templateError.message);
+    } else {
+      console.log('Sample template created with ID:', template.id);
+
+      const patientSnapshot = {
+        first_name: template.first_name,
+        last_name: template.last_name,
+        age: template.age,
+        sex: template.sex,
+        occupation: template.occupation,
+        chief_complaint: template.chief_complaint,
+        clinical_baseline: template.clinical_baseline,
+        allergies: template.allergies,
+        medical_history: template.medical_history,
+        current_medications: template.current_medications,
+        student_instructions: template.student_instructions,
+        expectations_rubric: template.expectations_rubric,
+      };
+
+      console.log('Assigning case to student...');
+      const { error: caseError } = await supabase
+        .from('assigned_cases')
+        .insert({
+          template_id: template.id,
+          student_id: studentUser.id,
+          assigned_by: instructorUser.id,
+          patient_snapshot: patientSnapshot,
+          due_date: '2026-10-15',
+          assignment_notes: 'Focus on antiplatelet and anticoagulation therapy options.',
+        });
+
+      if (caseError) console.error('Error assigning case:', caseError.message);
+      else console.log('Case assigned to student@test.com.');
+    }
+  } else {
+    console.error('Could not find instructor or student user — skipping template/case seed.');
   }
 
   console.log('Seeding complete!');

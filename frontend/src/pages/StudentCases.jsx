@@ -10,10 +10,17 @@ import TagSelector from "../components/TagSelector.jsx";
 import PTSoapNote from "../components/PTSoapNote.jsx";
 
 const STATUS_STYLES = {
-    "not started":    { background: "#f1f5f9", color: "#64748b" },
+    "not started":    { background: "#ede9fe", color: "#6d28d9" },
     "in progress":    { background: "#e0f2fe", color: "#0284c7" },
     "pending review": { background: "#fef3c7", color: "#b45309" },
     "completed":      { background: "#ecfdf5", color: "#047857" },
+};
+
+const STATUS_LABELS = {
+    "not started":    "Assigned",
+    "in progress":    "In Progress",
+    "pending review": "Submitted",
+    "completed":      "Completed",
 };
 
 const EDITABLE_STATUSES = ["not started", "in progress"];
@@ -235,7 +242,7 @@ export default function StudentCases({ onNavigate }) {
                                     const snap = c.patient_snapshot ?? {};
                                     const statusStyle = STATUS_STYLES[c.encounter_status] ?? STATUS_STYLES["not started"];
                                     const actionLabel =
-                                        c.encounter_status === "not started" ? "Start Case"
+                                        c.encounter_status === "not started" ? "Open Case"
                                         : c.encounter_status === "in progress" ? "Continue"
                                         : "View";
                                     return (
@@ -248,7 +255,7 @@ export default function StudentCases({ onNavigate }) {
                                             <td className="instructor-complaint-cell">{snap.chief_complaint ?? "—"}</td>
                                             <td>
                                                 <span className="instructor-status-badge" style={statusStyle}>
-                                                    {c.encounter_status}
+                                                    {STATUS_LABELS[c.encounter_status] ?? c.encounter_status}
                                                 </span>
                                             </td>
                                             <td>{new Date(c.assigned_at).toLocaleDateString()}</td>
@@ -295,6 +302,16 @@ export default function StudentCases({ onNavigate }) {
                         </div>
 
                         <div className="case-modal-body">
+                            {/* Student Instructions */}
+                            {activeCase.patient_snapshot?.student_instructions && (
+                                <div className="case-modal-section">
+                                    <p className="case-modal-section-label">Instructions</p>
+                                    <div className="case-complaint-box">
+                                        <p>{activeCase.patient_snapshot.student_instructions}</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Patient snapshot */}
                             <div className="case-modal-section">
                                 <p className="case-modal-section-label">Patient Info</p>
@@ -389,6 +406,16 @@ export default function StudentCases({ onNavigate }) {
                                                 <span>{v}</span>
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Grading Rubric */}
+                            {activeCase.patient_snapshot?.expectations_rubric && (
+                                <div className="case-modal-section">
+                                    <p className="case-modal-section-label">Expectations & Rubric</p>
+                                    <div className="case-notes-readonly">
+                                        {activeCase.patient_snapshot.expectations_rubric}
                                     </div>
                                 </div>
                             )}
